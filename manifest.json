@@ -1,0 +1,63 @@
+{ // Manifest Layout to follow https://developer.chrome.com/extensions/manifest
+    "manifest_version": 2,
+    "name": "Dictionary Chan",
+    "version": "0.1",
+    
+    "description": "Cutomizable popup dictionary with additional learning tools",
+    "icons": {
+//        "16":  "",
+//        "48":  "",
+//        "128": ""
+    },
+    "browser_action": {
+//        "default_icon": {
+//            "16": "",
+//            "24": "",
+//            "32": ""
+//        }
+        //, "default_popup": "bg/popup.html"
+    },
+    
+    "author": "Aryailia",
+    "background": {"page": "src/bgnamespace.html"},
+    "content_scripts": [{
+        "matches": ["http://*/*", "https://*/*", "file://*/*"],
+        "js": [
+            "lib/handlebars.min.js",
+            "src/utils.js",
+            "src/textinput.js",
+            "src/deinflect.js",
+            "src/dictionary.js",
+            "src/popup.js",
+            "src/main.js"
+        ],
+        //"css": ["fg/css/client.css"],
+        "run_at": "document_end" // Built in $(document).ready() for all content scripts
+    }],
+    "options_ui": { "page": "src/options.html" },
+    "permissions": [
+        "<all_urls>",
+        "storage"
+    ],
+    "web_accessible_resources": [
+//        "src/tmpl/popup.html" 
+//        "fg/frame.html",
+//        "fg/js/frame.js",
+//        "mixed/css/frame.css",
+//        "mixed/img/add-kanji.png",
+//        "mixed/img/add-term-kana.png",
+//        "mixed/img/add-term-kanji.png",
+//        "mixed/img/play-audio.png",
+//        "mixed/img/spinner.gif",
+//        "mixed/mp3/button.mp3",
+//        "mixed/ttf/kanji-stroke-orders.ttf"
+    ],
+    "minimum_chrome_version": "45.0.0.0"
+    //,
+//    "applications": {
+//        "gecko": {
+//            "id": "alex@foosoft.net",
+//            "strict_min_version": "51.0"
+//        }
+//    }
+}

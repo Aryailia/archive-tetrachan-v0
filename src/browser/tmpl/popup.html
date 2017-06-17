@@ -1,0 +1,40 @@
+<div>
+  <span style="padding-right: 1em;">{{japanese.[0].word}}</span>
+  <span>{{japanese.[0].reading}}</span>
+</div>
+<div>
+  <div>
+  {{#with senses}}
+    {{#each this}}
+    {{!-- Seperate meanings by lines --}}
+    <div>
+      <span>(<!--
+    {{!-- HTML comments removes the spaces between the parentheses and the parts of speech--}}
+    {{!-- Have to add for all cases to cover all cases --}}
+    {{#each parts_of_speech}}
+      {{#if @first}}
+        -->{{{this}}}<!--
+      {{else unless @last}}
+        -->, {{{this}}}<!--
+      {{else}}
+        -->, {{{this}}}<!--
+      {{/if}}
+    {{/each}}
+      -->)</span>
+      <span>
+
+      {{!-- List all same-meaning definitions --}}
+      {{#each english_definitions}}
+        {{!-- Semi-colons to seperate multiple same-meaning definitions --}}
+        {{#unless @last}}
+          {{this}};
+        {{else}}
+          {{this}}
+        {{/unless}}
+      {{/each}}
+      </span>
+    </div>
+    {{/each}}
+  {{/with}}
+  </div>
+</div>

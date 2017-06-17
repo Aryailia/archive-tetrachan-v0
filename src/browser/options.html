@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Options</title>
+  <style>
+    #tabs span {
+      background-color: aqua;
+      display: inline-block;
+
+      /* Disable text selection */
+      -webkit-user-select: none; /* Chrome 49+, etc. */
+      -moz-user-select: none;    /* Firefox 43+ */
+      -ms-user-select: none;     /* IE10+ */
+      user-select: none;         /* future */
+    }
+    #tabs span:hover {
+      background-color: greenyellow;
+    }
+    #tabs :not(:last-child) {
+      float: left;
+    }
+
+    #tabs .active {
+      color: orange;
+    }
+
+    .hide {
+      display: none;
+    }
+
+    #dictionary-table .name {
+      width: 30em;
+    }
+  </style>
+</head>
+<body>
+  <!--
+    The Lookup Process is divided into the following: 
+    1. Text detection based on mouse location. Some DOM for ruby text, etc.
+    2. Deinflection (Remove conjugation and/or delecision)
+    3. Pass possible words to all 
+    4. Populate popup based on results via template specified.
+    5. Romanize Results?
+    6. Optional text analysis?
+    Some care needs to be taken for RtL and Lli languages
+  -->
+  <div id="container">
+    <div id="tabs"><!-- In case css fails should still look the same
+      --><span id="gen">General</span><!--
+      --><span id="dicts">Dictionaries</span><!--
+      --><span id="search">Lookup</span><!--
+      --><span id="keys">Shortcuts</span><!--
+      --><span id="other">Integration</span><!--
+      --><span id="vocab">Word List</span><!--
+    --></div>
+    <div id="gen-content">
+      <input type="checkbox">Start Dictionary-chan on browser start.</input><br />
+      <input type="checkbox">Seperate dictionary per tab. (Currently does nothing, and unsure if I want to implement, so always global state.)</input><br />
+      <input type="checkbox">Highlight text</input><br />
+      <input type="number">Max Entries</input><br />
+      <div class="selection">
+        <h3>Activation Type</h3>
+        <input type="radio">Mouse Over Mode</input><br />
+        <input type="radio">Button-Click Mode (Aka. Super Sticky Mode)</input><br />
+        <input type="radio">Select Mode (On light)</input><br />
+      </div>
+      <div class="selection">
+        <h3>Lookup Type</h3>
+        <input type="radio">Local</input><br />
+        <input type="radio">Online</input><br />
+        <input type="radio">Lookup</input><br />
+      </div>
+    </div>
+    
+    <div id="dicts-content">
+      <div id="uiselect">
+        <div>Supports format 1,2,3,4,5 kek</div>
+        <table id="dictionary-table">
+          <tr><td class="name">Name</td><td class="path">Filepath</td></tr>
+          <tr><td class="name">Oxford English Dictionary</td><td class="path"></td></tr>
+          <tr><td class="name">JMDict</td><td class="path"></input></td></tr>
+          <tr><td class="name">Kojien</td><td class="path"></input></td></tr>
+          <tr><td class="name">Dajirin</td><td class="path"></input></td></tr>
+        </table>
+        <div>Name<input type="text"></input></div>
+        <div><select><option>Local</option><option>Online</option></select><input type="text"></input></div>
+        <div>Load into memory<input type="text"></input></div>
+        <div>Remove characters that match regex: <input type="text"></input></div>
+      </div>
+    </div>
+    
+    <div id="search-content">
+      <div id="uiselect">
+        <table id="lookup-table">
+          <tr><td class="icon">Icon</td><td class="name">Name</td><td class="shortcut">Shortcut</td></tr>
+          <tr><td class="icon">EN</td><td class="name">Oxford English</td><td class="shortcut">ALT+CTRL+1</td></tr>
+          <tr><td class="icon">JP</td><td class="name">Japanese</td><td class="shortcut">ALT+CTRL+2</td></tr>
+          <tr><td class="icon">ZH</td><td class="name">Chinese</td><td class="shortcut">ALT+CTRL+3</td></tr>
+          <tr><td class="icon">JPC</td><td class="name">Classical Japanese</td><td class="shortcut">ALT+CTRL+4</td></tr>
+        </table>
+        <div>Icon:<select><option>Text</option><option>Image</option></select><input type="text"></input></div>
+        <div>Name:<input type="text"></input></div>
+        <div>Shortcut:<input type="text"></input></div>
+        <div>Template:<input type="text"></input></div>
+        <div>Dictionaries:<input type="text"></input></div>
+        
+      </div>
+    </div>
+    
+    <div id="keys-content">
+      <li>Alternative Popup Location</li>
+      <li>Copy</li>
+      <li>Toggle Super Stick Mode</li>
+      <li>Cycle Lookup Modes</li>
+      <li>Next/Previous Entry</li>
+    </div>
+    
+    <div id="other-content">
+      The ankiconnect for Rikaisama or Yomichan goes here
+    </div>
+    
+    <div id="vocab-content">
+      Vocab Collections
+    </div>
+  </div>
+  <input type="submit" value="Save Settings">
+  <input type="submit" value="Reload Settings">
+  
+  <!-- Put at the end to group scripts and avoid needing $(document).ready-->
+  <!-- Cannot put inline scripts in options -->
+  <script src="/lib/handlebars.min.js"></script>
+  <script src="/src/optionsclass.js"></script>
+  <script src="/src/options.js"></script>
+</body>
+</html>
