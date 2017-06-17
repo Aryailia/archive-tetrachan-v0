@@ -1,5 +1,9 @@
 'use strict';
 
+/**
+ * @todo Rank readings for jisho?
+ */
+
 /*try {
 
 } catch (e) {
@@ -10,9 +14,9 @@ const IS_DEVELOPMENT = process.argv[2].trim().toLowerCase() === 'development';
 // Have to delete cache entries for non-native imports, otherwise it messes up
 // for when it is required several times, which 
 if (IS_DEVELOPMENT) {
-  delete require.cache[require.resolve('../compose/compose.js')];
+  delete require.cache[require.resolve('../../lib/Compose/compose.js')];
 }
-var $ = require(require.resolve('../compose/compose.js'));
+var $ = require(require.resolve('../../lib/Compose/compose.js'));
 
 function settingsOver(possibilities, settings) {
   var obj = Object.create(null);
@@ -125,16 +129,32 @@ var dictionaries = {
               //ipa: '',
             }).wordClasses;
 
+
+            // Have to group part of speech together because Jisho leaves them
+            // empy if future english_definitions share the same sense
             $(entry.senses)
+              // Reverse so part of speech is at the end of the group
               .reverse()
-              .foreach(function (sense) {
+              // Remove entries with no definition
+              .filter(function (sense) {
+                return sense.hasOwnProperty('english_definitions') &&
+                  sense.english_definitions !== '';
+              // Turn part of speech into a string
+              }).foreach(function (sense) {
                 sense.parts_of_speech = sense.parts_of_speech.join('; ');
-              }).chunk(function (wordClassGroup) {
-                return wordClassGroup.parts_of_speech !== '';
-              }).foreach(function (wordClassGroup) {
-                var group = senseList.addPartOfSpeech({ category: wordClassGroup[
-                  wordClassGroup.length - 1].parts_of_speech}).definitions;
-                wordClassGroup.forEach(function (wordClass) {
+              
+              // Group into shared part-of-speech (word class) chunks
+              }).chunk(function (sense) { 
+                return sense.parts_of_speech !== '';
+              // Add part-of-speech group with the different associated
+              // sense (definitions) into said group
+              }).foreach(function (classChunk) {
+                // Add and get back the part-of-speech (word class) group
+                var group = senseList.addPartOfSpeech({
+                  category: classChunk[classChunk.length - 1].parts_of_speech
+                }).definitions;
+                // And add all the definitions to that word class group
+                classChunk.forEach(function (wordClass) {
                   group.addDefinition(wordClass.english_definitions.join('; '));
                 });
               }).value();
@@ -153,6 +173,7 @@ var dictionaries = {
 
 module.exports = readingsListFactory;
 
+// Old implementation
 /*var TetraChanDictionaryInterface = Object.create(null);
 (function (dictionary, utils) {
   function query(text, pusher, json) {

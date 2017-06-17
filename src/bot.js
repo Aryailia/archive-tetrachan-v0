@@ -2,8 +2,8 @@
 
 const path = require('path');
 const Discord = require('discord.js');
-//const Discord = require('./meta/psuedodiscord.js');
-const config = require(path.resolve('./personal/discordconfig.json'));
+//const Discord = require('../lib/bothelpers/psuedodiscord.js');
+const config = require('../personal/discordconfig.json');
 const wrapper = require('botwrapper');
 const IS_DEVELOPMENT = process.argv[2].trim().toLowerCase() === 'development';
 

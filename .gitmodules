@@ -1,0 +1,6 @@
+[submodule "lib/Compose"]
+	path = lib/Compose
+	url = https://github.com/Aryailia/Compose.git
+[submodule "lib/bothelpers"]
+	path = lib/bothelpers
+	url = https://github.com/Aryailia/Discord-Bot-Development.git

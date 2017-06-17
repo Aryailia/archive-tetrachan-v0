@@ -10,11 +10,11 @@ const IS_DEVELOPMENT = process.argv[2].trim().toLowerCase() === 'development';
 if (IS_DEVELOPMENT) {
   delete require.cache[path.resolve('./src/core/dictionary.js')];
   delete require.cache[path.resolve('./src/core/unicode.js')];
-  delete require.cache[path.resolve('./src/compose/compose.js')];
+  delete require.cache[path.resolve('./lib/Compose/compose.js')];
 }
 const dictionary = require(path.resolve('./src/core/dictionary.js'));
 const unicode = require(path.resolve('./src/core/unicode.js'));
-const $ = require(path.resolve('./src/compose/compose.js'));
+const $ = require(path.resolve('./lib/Compose/compose.js'));
 //const languages = require('./bot/languages.json');
 
 // Check if dynamic load ever fucks up
