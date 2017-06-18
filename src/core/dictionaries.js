@@ -4,24 +4,10 @@
  * @todo Rank readings for jisho?
  * @todo Add handle for no search results
  */
-
-/*try {
-
-} catch (e) {
-}*/
-//const path = require('path');
-const IS_DEVELOPMENT = process.argv[2].trim().toLowerCase() === 'development'; 
-
-//console.log(require.resolve('./lexicon.js'));
-// Dyanmic Loads
-// Have to delete cache entries for non-native imports, otherwise it messes up
-// for when it is required several times, which 
 var $ = require('../../lib/Compose/compose.js');
 var lexicon = require('./lexicon.js');
 
 // Lexicon is like a class header file and this is the implementation stuff
-
-
 
 // Todo
 // - Exclusion regex

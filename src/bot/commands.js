@@ -1,15 +1,9 @@
 'use strict';
 
-const http = require('http');
-const path = require('path');
-const IS_DEVELOPMENT = process.argv[2].trim().toLowerCase() === 'development'; 
+const IS_DEVELOPMENT = process.argv[2] &&
+  process.argv[2].trim().toLowerCase() === 'development'; 
 
-// Dyanmic Loads
-// Have to delete cache entries for non-native imports, otherwise it messes up
-// for when it is required several times, which 
-//const dictionary = require(path.resolve('./src/core/dictionaries.js'));
-//const unicode = require(path.resolve('./src/core/unicode.js'));
-//const $ = require(path.resolve('./lib/Compose/compose.js'));
+const http = require('http');
 const dictionary = require('../core/dictionaries.js');
 //const unicode = require(path.resolve('./src/core/unicode.js'));
 const $ = require('../../lib/Compose/compose.js');

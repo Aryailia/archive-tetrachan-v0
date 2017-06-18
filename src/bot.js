@@ -5,7 +5,8 @@ const path = require('path');
 const Discord = require('../lib/bothelpers/psuedodiscord.js');
 const config = require('../personal/discordconfig.json');
 const wrapper = require('../lib/bothelpers/botwrapper.js');
-const IS_DEVELOPMENT = process.argv[2].trim().toLowerCase() === 'development';
+const IS_DEVELOPMENT = process.argv[2] &&
+  process.argv[2].trim().toLowerCase() === 'development';
 
 // If development, allow dynamically load commands at runtime for rapid testing
 const extraModules = wrapper.conditionalLoader(IS_DEVELOPMENT, {
