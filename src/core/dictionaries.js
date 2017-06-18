@@ -8,47 +8,22 @@
 
 } catch (e) {
 }*/
+//const path = require('path');
 const IS_DEVELOPMENT = process.argv[2].trim().toLowerCase() === 'development'; 
 
+//console.log(require.resolve('./lexicon.js'));
 // Dyanmic Loads
 // Have to delete cache entries for non-native imports, otherwise it messes up
 // for when it is required several times, which 
 if (IS_DEVELOPMENT) {
   delete require.cache[require.resolve('../../lib/Compose/compose.js')];
+  delete require.cache[require.resolve('./lexicon.js')];
 }
-var $ = require(require.resolve('../../lib/Compose/compose.js'));
+var $ = require('../../lib/Compose/compose.js');
+var lexicon = require('./lexicon.js');
 
-function settingsOver(possibilities, settings) {
-  var obj = Object.create(null);
-  Object.keys(possibilities).forEach(function (key) {
-    var toAdd = settings.hasOwnProperty(key)
-      ? settings[key]
-      : possibilities[key];
-    
-    obj[key] = typeof toAdd === 'object'
-      ? Object.assign(toAdd.constructor(), settings) // One-level deep clone
-      : toAdd; // Or just straight copy
-    delete settings[key];
-  });
+// Lexicon is like a class header file and this is the implementation stuff
 
-  if (Object.keys(settings).length > 0) { // If any properties left over
-    throw new Error('{settings} passed with invalid arguments' + settings);
-  }
-  return obj;
-}
-
-// Object composition
-function factory(mixin) {
-  var obj = Object.create(null);
-  obj.list = [];
-  Object.keys(mixin).forEach(function (methodName) {
-    obj[methodName] = function () {
-      var args = [obj].concat(Array.prototype.slice.call(arguments));
-      return mixin[methodName].apply(null, args);
-    };
-  });
-  return obj;
-}
 
 
 // Todo
@@ -56,69 +31,30 @@ function factory(mixin) {
 // - polyfill for fetch
 // - polyfill for 
 
-function readingsListFactory() {
-  return factory(readingsListMixin);
-}
-
-var readingsOutline = {
-  word: '',
-  reading: '',
-  ipa: '',
-  alternate: [],
-};
-
-var readingsListMixin = {
-  addReading: function (readings, options) {
-    var obj = settingsOver(readingsOutline, options);
-    //console.log(arguments);
-    obj.wordClasses = factory(senseMixin);
-    readings.list.push(obj);
-    return obj;
-  },
-
-  searchOnline: function (list, dictionaryName, text, fetcher) {
-    if (!dictionaries.hasOwnProperty(dictionaryName)) {
-      return Promise.reject('No dictionary named' + dictionaryName);
-    } else {
-      return dictionaries[dictionaryName](list, text, fetcher);
-    }
-  },
-};
-
-var wordClassOutline = {
-  category: '',
-};
-
-var senseMixin = {
-  addPartOfSpeech: function (wordClassGroup, options) {
-    var obj = settingsOver(wordClassOutline, options);
-    obj.definitions = factory(definitionMixin);
-    wordClassGroup.list.push(obj);
-    return obj;
-  },
-};
-
-//var definitionOutline = {};
-
-var definitionMixin = {
-  addDefinition: function (definitions, meaning) {
-    definitions.list.push(meaning);
+// Adding stuff to the prototype (mixin)
+lexicon.lexiconMixin.searchOnline = function (list, dictionaryName, text, fetcher) {
+  if (!dictionaries.hasOwnProperty(dictionaryName)) {
+    return Promise.reject('No dictionary named' + dictionaryName);
+  } else {
+    return dictionaries[dictionaryName](list, text, fetcher);
   }
 };
-
-
 
 var dictionaries = {
   jisho: function (list, text, fetcher) {
     var url = 'http://jisho.org/api/v1/search/words?keyword=';
+    ////var benchmark1 = new Date().getTime();
     return fetcher(url + encodeURIComponent(text))
       .then(function (response) { return JSON.parse(response); })
       .then(function (data) {
         if (data.meta.status === 200) {
           // Add reading
+          
+          ////var benchmark2 = new Date().getTime();
+          ////console.log('Request took ' + (benchmark2 - benchmark1));
           data.data.forEach(function (entry) {
             var primaryReading = entry.japanese[0];
-            var senseList = list.addReading({
+            var senseList = list.addLexeme({
               word: primaryReading.word,
               reading: primaryReading.reading,
               alternate: entry.japanese
@@ -127,8 +63,7 @@ var dictionaries = {
                   return [entry.word, entry.reading];
                 }),
               //ipa: '',
-            }).wordClasses;
-
+            }).classes;
 
             // Have to group part of speech together because Jisho leaves them
             // empy if future english_definitions share the same sense
@@ -150,7 +85,7 @@ var dictionaries = {
               // sense (definitions) into said group
               }).foreach(function (classChunk) {
                 // Add and get back the part-of-speech (word class) group
-                var group = senseList.addPartOfSpeech({
+                var group = senseList.addCategory({
                   category: classChunk[classChunk.length - 1].parts_of_speech
                 }).definitions;
                 // And add all the definitions to that word class group
@@ -158,6 +93,10 @@ var dictionaries = {
                   group.addDefinition(wordClass.english_definitions.join('; '));
                 });
               }).value();
+          
+            ////var benchmark3 = new Date().getTime();
+            ////console.log('Processing took ' + (benchmark3 - benchmark2));
+            ////console.log('Total ' + (benchmark3 - benchmark1));
           });
           // Rank readings?
 
@@ -170,8 +109,8 @@ var dictionaries = {
       });
   },
 };
-
-module.exports = readingsListFactory;
+//*/
+module.exports = lexicon.factory;
 
 // Old implementation
 /*var TetraChanDictionaryInterface = Object.create(null);

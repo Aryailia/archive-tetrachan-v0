@@ -8,11 +8,11 @@ const IS_DEVELOPMENT = process.argv[2].trim().toLowerCase() === 'development';
 // Have to delete cache entries for non-native imports, otherwise it messes up
 // for when it is required several times, which 
 if (IS_DEVELOPMENT) {
-  delete require.cache[path.resolve('./src/core/dictionary.js')];
+  delete require.cache[path.resolve('./src/core/dictionaries.js')];
   delete require.cache[path.resolve('./src/core/unicode.js')];
   delete require.cache[path.resolve('./lib/Compose/compose.js')];
 }
-const dictionary = require(path.resolve('./src/core/dictionary.js'));
+const dictionary = require(path.resolve('./src/core/dictionaries.js'));
 const unicode = require(path.resolve('./src/core/unicode.js'));
 const $ = require(path.resolve('./lib/Compose/compose.js'));
 //const languages = require('./bot/languages.json');
@@ -20,7 +20,7 @@ const $ = require(path.resolve('./lib/Compose/compose.js'));
 // Check if dynamic load ever fucks up
 if (IS_DEVELOPMENT && !dictionary.toString().startsWith(
     'function readingsListFactory()')) {
-  throw new SyntaxError('Dictionary: import failing');
+//  throw new SyntaxError('Dictionary: import failing');
 }
 
 const commands = {
@@ -50,7 +50,7 @@ addCommand('jisho', '', function (text, message) {
             ? `**${entry.reading}**`
             : `**${entry.word}** (${entry.reading})`;
           
-          const partsOfSpeech = $(entry.wordClasses.list).map(function (group) {
+          const partsOfSpeech = $(entry.classes.list).map(function (group) {
             const category = `**${group.category}**`;
             const definitions = $.map(function (meaning, index) {
               return `${index + 1}. ${meaning}`;

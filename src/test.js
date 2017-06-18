@@ -1,3 +1,25 @@
+var util = require('util');
+var lexicon = require('./core/lexicon.js');
+
+var dict = lexicon.factory();
+var lexeme = dict.addLexeme({
+  word: 'tasdf',
+  reading: 'asdf',
+  ipa: 'asdf',
+  alternate: ['asdfklja', 'asdfklajsdf'],
+});
+/*var category = lexeme.classes.addCategory({
+  category: 'noun'
+});
+var definition = category.definitions.addDefinition(
+  'the blue cat'
+);*/
+
+console.log(util.inspect(lexeme, { showHidden: false, depth: null }));
+console.log(dict);
+
+
+/*
 //var multilingual = require('./unicode.js');
 //multilingual.convertHalfWidth('！ｇｏｈｅｒｅ');
 const Http = require('http');
@@ -19,3 +41,4 @@ function makeRequest(path) {
 
 utils.makeRequest('http://jisho.org/api/v1/search/words?keyword=食')
   .then(x => console.log(x));
+//*/
