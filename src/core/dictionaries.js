@@ -2,6 +2,7 @@
 
 /**
  * @todo Rank readings for jisho?
+ * @todo Add handle for no search results
  */
 
 /*try {
@@ -15,10 +16,6 @@ const IS_DEVELOPMENT = process.argv[2].trim().toLowerCase() === 'development';
 // Dyanmic Loads
 // Have to delete cache entries for non-native imports, otherwise it messes up
 // for when it is required several times, which 
-if (IS_DEVELOPMENT) {
-  delete require.cache[require.resolve('../../lib/Compose/compose.js')];
-  delete require.cache[require.resolve('./lexicon.js')];
-}
 var $ = require('../../lib/Compose/compose.js');
 var lexicon = require('./lexicon.js');
 

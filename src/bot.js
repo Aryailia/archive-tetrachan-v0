@@ -1,10 +1,10 @@
 'use strict';
 
 const path = require('path');
-const Discord = require('discord.js');
-//const Discord = require('../lib/bothelpers/psuedodiscord.js');
+//const Discord = require('discord.js');
+const Discord = require('../lib/bothelpers/psuedodiscord.js');
 const config = require('../personal/discordconfig.json');
-const wrapper = require('botwrapper');
+const wrapper = require('../lib/bothelpers/botwrapper.js');
 const IS_DEVELOPMENT = process.argv[2].trim().toLowerCase() === 'development';
 
 // If development, allow dynamically load commands at runtime for rapid testing
@@ -46,21 +46,18 @@ client.on('message', function(message) {
   const match = wrapper.checkCommandFormat(config.prefix).exec(message.content);
   if (match === null) return; // Not a valid command format
   
-  Promise.all(extraModules.dynamicLoadIfDev()).then(function () {
-    const command = extraModules.unicode.sanitize(match[1]);
-    const parameter = extraModules.unicode.sanitize(match[2] == undefined
-      ? ''
-      : match[2]);
-    
-    if (IS_DEVELOPMENT) {
-      console.log('command: ', match[1], '-', command);
-      console.log('parameter: ', match[2], '-', parameter);
-    }
-    if (extraModules.commands.hasOwnProperty(command)) {
-      extraModules.commands[command](parameter, message);
-    }
-  }).catch(function (err) {
-    console.error(err);
-  });
+  extraModules.dynamicLoadIfDev();
+  const command = extraModules.unicode.sanitize(match[1]);
+  const parameter = extraModules.unicode.sanitize(match[2] == undefined
+    ? ''
+    : match[2]);
+  
+  if (IS_DEVELOPMENT) {
+    console.log('command: ', match[1], '-', command);
+    console.log('parameter: ', match[2], '-', parameter);
+  }
+  if (extraModules.commands.hasOwnProperty(command)) {
+    extraModules.commands[command](parameter, message);
+  }
   
 });//*/

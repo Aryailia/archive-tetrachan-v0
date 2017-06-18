@@ -7,20 +7,19 @@ const IS_DEVELOPMENT = process.argv[2].trim().toLowerCase() === 'development';
 // Dyanmic Loads
 // Have to delete cache entries for non-native imports, otherwise it messes up
 // for when it is required several times, which 
-if (IS_DEVELOPMENT) {
-  delete require.cache[path.resolve('./src/core/dictionaries.js')];
-  delete require.cache[path.resolve('./src/core/unicode.js')];
-  delete require.cache[path.resolve('./lib/Compose/compose.js')];
-}
-const dictionary = require(path.resolve('./src/core/dictionaries.js'));
-const unicode = require(path.resolve('./src/core/unicode.js'));
-const $ = require(path.resolve('./lib/Compose/compose.js'));
+//const dictionary = require(path.resolve('./src/core/dictionaries.js'));
+//const unicode = require(path.resolve('./src/core/unicode.js'));
+//const $ = require(path.resolve('./lib/Compose/compose.js'));
+const dictionary = require('../core/dictionaries.js');
+//const unicode = require(path.resolve('./src/core/unicode.js'));
+const $ = require('../../lib/Compose/compose.js');
 //const languages = require('./bot/languages.json');
 
 // Check if dynamic load ever fucks up
-if (IS_DEVELOPMENT && !dictionary.toString().startsWith(
-    'function readingsListFactory()')) {
-//  throw new SyntaxError('Dictionary: import failing');
+if (IS_DEVELOPMENT &&
+    !dictionary.toString().startsWith('function _lexiconFactory()')) {
+  console.log(dictionary.toString());
+  throw new SyntaxError('Dictionary: import failing');
 }
 
 const commands = {
