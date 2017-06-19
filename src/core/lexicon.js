@@ -3,6 +3,7 @@
 // - polyfill for fetch
 // - polyfill for 
 
+var settingsOver = require('./utils.js').settingsOver;
 var SUB_CATEGORY_1 = 'classes';
 var SUB_CATEGORY_2 = 'definitions';
 
@@ -83,24 +84,6 @@ var output = {
 };
 
 // Helper functions
-function settingsOver(possibilities, settings) {
-  var obj = Object.create(null);
-  Object.keys(possibilities).forEach(function (key) {
-    var toAdd = settings.hasOwnProperty(key)
-      ? settings[key]
-      : possibilities[key];
-
-    obj[key] = typeof toAdd === 'object'
-      ? Object.assign(toAdd.constructor(), settings[key]) // One-level deep clone
-      : toAdd; // Or just straight copy
-    delete settings[key];
-  });
-
-  if (Object.keys(settings).length > 0) { // If any properties left over
-    throw new Error('{settings} passed with invalid arguments' + settings);
-  }
-  return obj;
-}
 
 // Object composition
 function _factory(mixin) {
