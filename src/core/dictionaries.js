@@ -47,7 +47,7 @@ online.jisho = function (list, text, fetcher) {
           var senseList = list.addLexeme({
             word: primaryReading.word,
             reading: primaryReading.reading,
-            alternate: entry.japanese
+            allographes: entry.japanese
               .filter(function (entry, i) { return i > 0; })
               .map(function (entry) {
                 return [entry.word, entry.reading];

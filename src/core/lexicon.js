@@ -4,11 +4,11 @@
 // - polyfill for 
 
 var settingsOver = require('./utils.js').settingsOver;
-var SUB_CATEGORY_1 = 'allographes';
+var SUB_CATEGORY_1 = 'lexeme';
 var SUB_CATEGORY_2 = 'classes';
 var SUB_CATEGORY_3 = 'definitions';
 
-var _allographes, _classes, _senses;
+var _lexeme, _classes, _senses;
 // Outline is all the possible entries for options at that level
 // Note: .addDefinition() accepts a string, not an object unlike the others
 // 
@@ -18,7 +18,7 @@ var _allographes, _classes, _senses;
 //
 // Mixin add functionality to the outside. (Good explanation coming soon TM)
 // 
-// Eg. You get word, reading, ipa, alternate, and classes{}
+// Eg. You get word, reading, ipa, allographes, and classes{}
 //   Inside classes you have access to addCategory [and list]
 // 
 // Note: this only supports having outline, mixin, and the one subdivision,
@@ -67,8 +67,8 @@ var lexicon = {
 
   mixin: { // For lexemes
     addLexeme: function (lexemesList, options) {
-      var obj = settingsOver(_allographes.outline, options);
-      obj[SUB_CATEGORY_2] = _factory(_allographes.mixin);
+      var obj = settingsOver(_lexeme.outline, options);
+      obj[SUB_CATEGORY_2] = _factory(_lexeme.mixin);
       lexemesList.list.push(obj);
       return obj;
     },
@@ -78,14 +78,14 @@ function _lexiconFactory() {
   return _factory(lexicon.mixin);
 }
 
-_allographes = lexicon[SUB_CATEGORY_1];
-_classes = _allographes[SUB_CATEGORY_2];
+_lexeme = lexicon[SUB_CATEGORY_1];
+_classes = _lexeme[SUB_CATEGORY_2];
 _senses = _classes[SUB_CATEGORY_3];
 
 var output = {
   factory: _lexiconFactory,
   lexiconMixin: lexicon.mixin,
-  lexemeMixin: _allographes.mixin,
+  lexemeMixin: _lexeme.mixin,
   classMixin: _classes.mixin,
 };
 
