@@ -1,4 +1,4 @@
-//var util = require('util');
+var util = require('util');
 const dicts = require('../core/dictionaries.js');
 const config = require('../../personal/discordconfig.json');
 
