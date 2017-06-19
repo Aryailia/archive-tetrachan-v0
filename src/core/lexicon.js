@@ -56,7 +56,7 @@ var lexicon = {
       },
     },
     mixin: { // For word classes
-      addCategory: function (wordClassGroup, options) {
+      addClass: function (wordClassGroup, options) {
         var obj = settingsOver(_classes.outline, options);
         obj[SUB_CATEGORY_3] = _factory(_classes.mixin);
         wordClassGroup.list.push(obj);

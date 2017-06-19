@@ -45,7 +45,15 @@ _addCommand('en]jp', '', function (parameter, message) {
 _addCommand('jp]en', '', commands.jisho);
 
 _addCommand('oed', '', function (text, message) {
-  Dictionaries.onlineLookup('oxford', text, _onlineRequest);
+  Dictionaries.onlineLookup('oxford', text, _onlineRequest)
+    .then(function (readingList) { // Process readingList structure
+      return _formatAPI(readingList).join('\n\n');
+    }).then(function (str) { // Output
+      //wrapper.massMessage(str, message.channel.send);
+      message.channel.send(str);
+    }).catch(function (err) {
+      console.error(err);
+    });
 });
 
 function _addCommand(command, documentation, fn) {

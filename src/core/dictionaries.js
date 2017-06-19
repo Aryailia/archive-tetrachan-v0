@@ -75,13 +75,16 @@ online.jisho = function (list, text, fetcher) {
             // sense (definitions) into said group
             }).foreach(function (classChunk) {
               // Add and get back the part-of-speech (word class) group
-              var group = senseList.addCategory({
+              var group = senseList.addClass({
                 category: classChunk[classChunk.length - 1].parts_of_speech
               }).definitions;
               // And add all the definitions to that word class group
               classChunk.forEach(function (wordClass) {
                 group.addDefinition({
-                  sense: wordClass.english_definitions.join('; ')
+                  sense: wordClass.english_definitions.join('; '),
+                  examples: [
+                    
+                  ],
                 });
               });
             }).value();
