@@ -3,17 +3,12 @@
 /**
  * @todo Rank readings for jisho?
  * @todo Add handle for no search results
+ * @todo Exclusion regex (old for extension)
+ * @todo polyfill for fetch (old for extension)
  */
-var $ = require('../../lib/Compose/compose.js');
+// C++ analogy: Lexicon is like a header file and this is the implementation
 var lexicon = require('./lexicon.js');
-
-// Lexicon is like a class header file and this is the implementation stuff
-
-// Todo
-// - Exclusion regex
-// - polyfill for fetch
-// - polyfill for 
-
+var $ = require('../../lib/Compose/compose.js');
 
 var output = {
   processJson: function (response) {
@@ -85,7 +80,9 @@ online.jisho = function (list, text, fetcher) {
               }).definitions;
               // And add all the definitions to that word class group
               classChunk.forEach(function (wordClass) {
-                group.addDefinition(wordClass.english_definitions.join('; '));
+                group.addDefinition({
+                  sense: wordClass.english_definitions.join('; ')
+                });
               });
             }).value();
         

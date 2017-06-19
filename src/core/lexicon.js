@@ -4,10 +4,11 @@
 // - polyfill for 
 
 var settingsOver = require('./utils.js').settingsOver;
-var SUB_CATEGORY_1 = 'classes';
-var SUB_CATEGORY_2 = 'definitions';
+var SUB_CATEGORY_1 = 'allographes';
+var SUB_CATEGORY_2 = 'classes';
+var SUB_CATEGORY_3 = 'definitions';
 
-var _lexemes, _wordClasses;
+var _allographes, _classes, _senses;
 // Outline is all the possible entries for options at that level
 // Note: .addDefinition() accepts a string, not an object unlike the others
 // 
@@ -23,37 +24,41 @@ var _lexemes, _wordClasses;
 // Note: this only supports having outline, mixin, and the one subdivision,
 //   so will have to redo _factory() if want to add more in future
 var lexicon = {
-  lexemes: { outline: {
+  [SUB_CATEGORY_1]: { outline: {
     // The following are the accessible properties for lexemesList
     // And can be specified by options
     word: '',
     reading: '',
     ipa: '',
-    alternate: [],}, // Last of options
+    alternate: [], }, // Last of options
 
     //list: [], // This gets added _factory()
-    [SUB_CATEGORY_1]: { outline: {
+    [SUB_CATEGORY_2]: { outline: {
       // The following are the accessible properties for word classes
       // And can be specified by options
-      category: '',}, // Last of option
+      category: '', }, // Last of option
       
       //list: [], // This gets added _factory()
-      [SUB_CATEGORY_2]: { outline:
-        {}, // No properties for definitions, just the list
+      [SUB_CATEGORY_3]: { outline: {
+        // The following are the accessible properties for word classes
+        // And can be specified by options
+        sense: '',
+        examples: [], }, // Last of options
 
         //list: [], // This gets added by _factory()
       },
 
       mixin: { // For definitions
-        addDefinition: function (definitions, meaning) {
-          definitions.list.push(meaning);
+        addDefinition: function (definitions, options) {
+          var obj = settingsOver(_senses.outline, options);
+          definitions.list.push(obj);
         }
       },
     },
     mixin: { // For word classes
       addCategory: function (wordClassGroup, options) {
-        var obj = settingsOver(_wordClasses.outline, options);
-        obj[SUB_CATEGORY_2] = _factory(_wordClasses.mixin);
+        var obj = settingsOver(_classes.outline, options);
+        obj[SUB_CATEGORY_3] = _factory(_classes.mixin);
         wordClassGroup.list.push(obj);
         return obj;
       },
@@ -62,8 +67,8 @@ var lexicon = {
 
   mixin: { // For lexemes
     addLexeme: function (lexemesList, options) {
-      var obj = settingsOver(_lexemes.outline, options);
-      obj[SUB_CATEGORY_1] = _factory(_lexemes.mixin);
+      var obj = settingsOver(_allographes.outline, options);
+      obj[SUB_CATEGORY_2] = _factory(_allographes.mixin);
       lexemesList.list.push(obj);
       return obj;
     },
@@ -73,19 +78,18 @@ function _lexiconFactory() {
   return _factory(lexicon.mixin);
 }
 
-_lexemes = lexicon.lexemes;
-_wordClasses = lexicon.lexemes.classes;
+_allographes = lexicon[SUB_CATEGORY_1];
+_classes = _allographes[SUB_CATEGORY_2];
+_senses = _classes[SUB_CATEGORY_3];
 
 var output = {
   factory: _lexiconFactory,
   lexiconMixin: lexicon.mixin,
-  lexemeMixin: _lexemes.mixin,
-  classMixin: _wordClasses.mixin,
+  lexemeMixin: _allographes.mixin,
+  classMixin: _classes.mixin,
 };
 
 // Helper functions
-
-// Object composition
 function _factory(mixin) {
   var obj = Object.create(null);
   obj.list = [];

@@ -68,8 +68,8 @@ function _formatAPI(apiOutput) {
     
     const partsOfSpeech = $(entry.classes.list).map(function (group) {
       const category = `**${group.category}**`;
-      const definitions = $.map(function (meaning, index) {
-        return `${index + 1}. ${meaning}`;
+      const definitions = $.map(function (definition, index) {
+        return `${index + 1}. ${definition.sense}`;
       }, group.definitions.list).join('\n');
 
       return category + '\n' + definitions;

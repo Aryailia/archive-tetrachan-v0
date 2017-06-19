@@ -1,3 +1,4 @@
+//var util = require('util');
 const dicts = require('../core/dictionaries.js');
 const config = require('../../personal/discordconfig.json');
 
@@ -15,7 +16,9 @@ dicts.web.oxford = function (list, text, fetcher) {
   return(fetcher(url + encodeURIComponent(text), _oxfordHeaders)
     .then(dicts.processJson)
     .then(function (data) {
-      console.log(data);
+      //data.results
+      console.log(util.inspect(data, { showHidden: false, depth: null }));
+      //console.log(data);
     }).catch(dicts.processError)
   );
 };
