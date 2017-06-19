@@ -30,7 +30,7 @@ var lexicon = {
     word: '',
     reading: '',
     ipa: '',
-    alternate: [], }, // Last of options
+    allographes: [], }, // Last of options
 
     //list: [], // This gets added _factory()
     [SUB_CATEGORY_2]: { outline: {
