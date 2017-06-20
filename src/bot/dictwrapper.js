@@ -1,4 +1,23 @@
-var util = require('util');
+//http://www.unicode.org/cgi-bin/GetUnihanData.pl?codepoint=
+//https://github.com/goldendict/goldendict
+//https://github.com/attgm/kotonoko
+//https://github.com/fujii/qolibri
+//https://github.com/sina-ht/ebview
+//http://rtkwiki.koohii.com/wiki/EPWING_software
+//https://github.com/FooSoft/yomichan-import
+//https://foosoft.net/projects/yomichan-import/
+//https://github.com/ff-addons/rikaisama
+//https://github.com/goldendict/goldendict/issues/298
+//https://github.com/cyndis/epwing.rs
+
+//JMDict
+//http://ftp.monash.edu.au/pub/nihongo/00INDEX.html
+//CC-CEDICT
+//http://cantonese.org/download.html
+
+'use strict';
+
+//var util = require('util');
 const dicts = require('../core/dictionaries.js');
 const config = require('../../personal/discordconfig.json');
 var $ = require('../../lib/Compose/compose.js');
@@ -26,20 +45,20 @@ dicts.web.oxford = function (results, text, fetcher) {
             category: lexicalEntry.lexicalCategory,
           });
           lexicalEntry.entries.forEach(function (entry) {
-            entry.senses.forEach(function (sense) {
+            entry.senses.forEach(function (sense) { // Not sure when we get
               console.log(sense.hasOwnProperty('definitions'));
-              if (sense.hasOwnProperty('definitions')) {
+              if (sense.hasOwnProperty('definitions')) { // Normal Case
                 category.definitions.addDefinition({
                   sense: sense.definitions.join('; '),
                   examples: sense.examples,
                 });
-              } else if (sense.hasOwnProperty('crossReferenceMarkers')) {
+              } else if (sense.hasOwnProperty('crossReferenceMarkers')) { // Non-standard case
                 category.definitions.addDefinition({
                   sense: sense.crossReferenceMarkers.join('; '),
                   examples: sense.examples,
                 });
               }
-              if (sense.hasOwnProperty('subsenses')) {
+              if (sense.hasOwnProperty('subsenses')) { // Not sure what subsenses are for
                 sense.subsenses.forEach(function (subsense) {
                   category.definitions.addDefinition({
                     sense: subsense.definitions.join('; '),
@@ -51,10 +70,9 @@ dicts.web.oxford = function (results, text, fetcher) {
           });
         });
       });
-
-      console.log(util.inspect(results, { showHidden: false, depth: null }));
+      //console.log(util.inspect(results, { showHidden: false, depth: null }));
       return results;
-    }).catch(dicts.processError)
+    })
   );
 };
 

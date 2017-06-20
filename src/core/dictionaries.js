@@ -1,3 +1,8 @@
+//https://github.com/goldendict/goldendict
+
+// Web Extensions
+// https://developer.chrome.com/extensions/messaging#external
+// https://stackoverflow.com/questions/42108782/firefox-webextensions-get-local-files-content-by-path
 'use strict';
 
 /**
@@ -83,7 +88,7 @@ online.jisho = function (list, text, fetcher) {
                 group.addDefinition({
                   sense: wordClass.english_definitions.join('; '),
                   examples: [
-                    
+
                   ],
                 });
               });
