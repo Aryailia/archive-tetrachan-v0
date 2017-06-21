@@ -7,13 +7,13 @@ This readme will mostly be to keep track of things.
 
 # Current Status #
 Branches
-* Discord bot (node app)
+* Discord bot (Node app, ES6+ okay)
     * Jisho
     * CC-CEDICT
     * Oxford English Dictionary
     * Goo, currently WIP
         * Have yet to figure out how I want to go about parsing an HTML document (JSDom perhaps)
-* Plugin (WebExtensions)
+* Plugin (WebExtensions, ES5 only!)
     * Had, Popup, Options, Templating sort of half implemented and working but then started on making a build environment and discord bot
     * Haven't yet refactored code to work with webpack build environment
     * Problems with local dictionaries
@@ -22,10 +22,10 @@ Branches
         * HTML5's FileReader API, SQLite, IndexedDB
         * Interfacing with pre-installed Rikaichan dictionaries (which are just JMDict). May have issue with WebExtensions vs XUL incompatibility.
     * Also can't use OED's API, may want to parse HTML instead. Or use Longman.
+* Plugin-alternative Website (Node and Browser)
+    * Going to use express for the general case since bandwidth load is on user. I believe Express will handle all the redirection, etc.
 * Plugin-alternative Website Hosted (Good for demos)
     * ./test/httpsserver.js is the stripped down of a the node fetcher that was intended my attempts at understanding how this works
-* Plugin-alternative Website
-    * Going to use express for the general case since bandwidth load is on user. I believe Express handles all the redirection etc.
 * Mobile App
     * Not started
     * May want to consider [Progressive Web App](https://en.wikipedia.org/wiki/Progressive_web_app) approach
