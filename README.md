@@ -1,7 +1,7 @@
 # TetraChan #
 A multiplatform and multilanguage dictionary lookup program. Popup dictionaries for the web browser, discord bot, etc.
 
-You can see this in action
+You can see this in action within this [https://discord.gg/8ZCWsGF](https://discord.gg/8ZCWsGF) discord server, which is the server for my various projects.
 
 This readme will mostly be to keep track of things.
 

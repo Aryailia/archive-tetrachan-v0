@@ -144,7 +144,7 @@ function _onlineRequest(requestUrl, options) {
   const urlObj = Url.parse(requestUrl);
   return new Promise(function (resolve, reject) {
     const headers = Utils.settingsOver(requestDefaults, options);
-    headers.port = urlObj.port;
+    headers.port = urlObj.port; // Deferring port setting to the URL
     headers.hostname = urlObj.hostname;
     headers.path = urlObj.path;
     
