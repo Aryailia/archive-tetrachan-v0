@@ -148,9 +148,8 @@ function _onlineRequest(requestUrl, options) {
     headers.hostname = urlObj.hostname;
     headers.path = urlObj.path;
     
-    //Protocol[urlObj.protocol].get(headers, function(response) {
-    HTTPS.get(headers, function(response) {
-      //response.setEncoding('utf8');
+    Protocol[urlObj.protocol].get(headers, function(response) {
+      response.setEncoding('utf8');
       if (response.statusCode == 200) {
         var body = '';
         response.on('data', function (data) {
