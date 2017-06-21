@@ -23,7 +23,6 @@ const config = require('../../personal/discordconfig.json');
 var $ = require('../../lib/Compose/compose.js');
 
 const _oxfordHeaders = {
-  port: 443,
   headers: {
     'Content-Type': 'application/x-www-form-urlencoded',
     'Content-Length': 0,
@@ -34,7 +33,7 @@ const _oxfordHeaders = {
 };
 
 dicts.web.oxford = function (results, text, fetcher) {
-  const url = 'https://od-api.oxforddictionaries.com/api/v1/entries/en/';
+  const url = 'https://od-api.oxforddictionaries.com:443/api/v1/entries/en/';
   return(fetcher(url + encodeURIComponent(text), _oxfordHeaders)
     .then(dicts.processJson)
     .then(function (data) {

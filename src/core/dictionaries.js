@@ -3,6 +3,7 @@
 // Web Extensions
 // https://developer.chrome.com/extensions/messaging#external
 // https://stackoverflow.com/questions/42108782/firefox-webextensions-get-local-files-content-by-path
+// https://stackoverflow.com/questions/13544179/jsdom-document-queryselector-enabled-but-is-missing-from-document
 'use strict';
 
 /**
@@ -49,6 +50,7 @@ var online = output.web;
  * native multiline processing
  * @todo will need unit test to make sure we aren't double counting any words
  * and that we aren't missing out last entry in a buffer chunk
+ * @todo of course add file failure code
  */
 offline.cedict = function (lexicon, text, loader) {
   var wb = '[ \\n\\[\\]\\/]';
@@ -83,50 +85,21 @@ offline.cedict = function (lexicon, text, loader) {
     return lexicon;
   });
 };
-offline.cedict2 = function (lexicon, text, loader) {
-  var separator = '[ \[]';
-  var query = new RegExp('^' + separator + '*(' + text + ')' + separator + '*$','igm');
-  switch ('b') {
-    case 'a': query = new RegExp('^.*(' + text + ').*$','igm'); break;
-    case 'c': query = new RegExp('^.*(' + text + ').*$','igm'); break;
-  }
-  return loader(function (last, chunk) {
-    var toProcess = last + chunk;
-    var result = [];
-    var process = /^([^#]\S*) (\S+) \[(.+)\] \/(.+)\/$/;
-    var searchResult, decompose;
-    while ((searchResult = query.exec(toProcess)) != null && result.length < 10) {
-      if ((decompose = process.exec(searchResult[0])) != null) {
-        //console.log(decompose);
-        lexicon.addLexeme({
-          word: decompose[1],
-          reading: decompose[3],
-        }).classes.addClass({
-        }).definitions.addDefinition({
-          sense: decompose[4],
-        });
-        //console.log(lexicon);
-        //console.log(Object.keys(searchResult), searchResult.length);
-      }
-      //console.log(regex);
-      //console.log([stuff[0], stuff[1]], stuff.length);
-    }
-  }).then(function () {
-    return lexicon;
-  });
-};
 
 online.goo = function (list, text, fetcher) {
-  var url = 'https://dictionary.goo.ne.jp/srch/jn/';
-  return(fetcher(url + encodeURIComponent(text) + '/m1u')
+  text = '君';
+  var url = 'https://dictionary.goo.ne.jp:443/srch/jn/';
+  console.log(url);
+  (fetcher(url + encodeURIComponent(text) + '/m1u/')
     .then(function (data) {
       console.log(data);
     }).catch(output.processError)
   );
+  return Promise.resolve('50');
 };
 
 online.jisho = function (lexicon, text, fetcher) {
-  var url = 'http://jisho.org/api/v1/search/words?keyword=';
+  var url = 'http://jisho.org:80/api/v1/search/words?keyword=';
   ////var benchmark1 = new Date().getTime();
   return(fetcher(url + encodeURIComponent(text))
     .then(output.processJson)

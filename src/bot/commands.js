@@ -5,6 +5,7 @@ const IS_DEVELOPMENT = process.argv[2] &&
 
 const fs =require('fs');
 const Url = require('url');
+const HTTPS = require('https');
 const Protocol = {
   'https:': require('https'),
   'http:': require('http'),
@@ -26,7 +27,7 @@ const commands = {
 };
 
 _addCommand('jisho', '', function (text, message) {
-  Dictionaries.onlineLookup('jisho', text, _onlineRequest)
+  Dictionaries.onlineLookup('jisho', text, '', _onlineRequest)
     .then(function (readingList) { // Process readingList structure
       return _formatAPI(readingList).join('\n\n');
         //.filter(function (entry) {
@@ -69,7 +70,7 @@ _addCommand('goo', '', function (text, message) {
     //})
     .then(function (str) { // Output
       //wrapper.massMessage(str, message.channel.send);
-      message.channel.send(str);
+      //message.channel.send(str);
     }).catch(function (err) {
       console.error(err);
     });
@@ -135,7 +136,6 @@ function _formatAPI(apiOutput) {
 }
 
 const requestDefaults = {
-  port: 80,
   method: 'GET',
   headers: {},
 };
@@ -144,11 +144,12 @@ function _onlineRequest(requestUrl, options) {
   const urlObj = Url.parse(requestUrl);
   return new Promise(function (resolve, reject) {
     const headers = Utils.settingsOver(requestDefaults, options);
-    headers.protocol = urlObj.protocol;
+    headers.port = urlObj.port;
     headers.hostname = urlObj.hostname;
     headers.path = urlObj.path;
     
-    Protocol[urlObj.protocol].get(headers, function(response) {
+    //Protocol[urlObj.protocol].get(headers, function(response) {
+    HTTPS.get(headers, function(response) {
       //response.setEncoding('utf8');
       if (response.statusCode == 200) {
         var body = '';
@@ -156,13 +157,14 @@ function _onlineRequest(requestUrl, options) {
           body += data;
         }).on('end',function () {
           resolve(body);
-        }).on('error',function(err){
-          console.error(err);
-          reject(err);
+        }).on('error',function (error) { // receive error (not sure this is needed)
+          reject(error);
         });
-      } else {
+      } else { // Bad error code
         reject(`${response.statusCode}: No such entry found`);
       }
+    }).on('error', function (error) { // send error
+      reject(error);
     });
   });
 }
