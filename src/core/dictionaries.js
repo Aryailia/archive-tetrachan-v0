@@ -22,11 +22,18 @@ var output = {
   processError: function (error) {
     console.error(error);
   },
-  onlineLookup: function searchOnline(dictionaryName, text, fetcher) {
-    if (!output.web.hasOwnProperty(dictionaryName)) {
-      return Promise.reject('No dictionary named' + dictionaryName);
-    } else {
+  onlineLookup: function searchOnline(dictionaryName, text, flags, fetcher) {
+    if (output.web.hasOwnProperty(dictionaryName)) {
       return output.web[dictionaryName](lexicon.factory(), text, fetcher);
+    } else {
+      return Promise.reject('No dictionary named' + dictionaryName);
+    }
+  },
+  offlineLookup: function (dictionaryName, text, flags, fetcher) {
+    if (output.local.hasOwnProperty(dictionaryName)) {
+      return output.local[dictionaryName](lexicon.factory(), text, fetcher);
+    } else {
+      return Promise.reject('No dictionary named' + dictionaryName);
     }
   },
   local: {},
@@ -36,10 +43,92 @@ var output = {
 var offline = output.local;
 var online = output.web;
 
-online.jisho = function (list, text, fetcher) {
+
+/**
+ * @todo compare speed of multiline regex vs splitting across newlines/node\
+ * native multiline processing
+ * @todo will need unit test to make sure we aren't double counting any words
+ * and that we aren't missing out last entry in a buffer chunk
+ */
+offline.cedict = function (lexicon, text, loader) {
+  var wb = '[ \\n\\[\\]\\/]';
+  var query;
+  switch ('') { // Simplified, traditional, pinyin, and english
+    //case 's': query = new RegExp('^.*(' + text + ').*$','igm'); break;
+    //case 't': query = new RegExp('^.*(' + text + ').*$','igm'); break;
+    //case 'p': query = new RegExp('^.*(' + text + ').*$','igm'); break;
+    //case 'e': query = new RegExp('^.*(' + text + ').*$','igm'); break;
+    default: query = //new RegExp('^(.*' + text + wb +'.*)$', 'igm');
+    new RegExp('((?:\n|\n.*' + wb + ')' + text + wb +'.*)$', 'igm');
+    //console.log(query);
+  }
+  var process = /^\n?([^#]\S*) (\S+) \[(.+)\] \/(.+)\/$/;
+
+  return loader(function (last, chunk) {
+    var toProcess = '\n' + last.substr(last.lastIndexOf('\n') + 1) + chunk;
+    var searchResult, decompose;
+    while ((searchResult = query.exec(toProcess)) != null  && lexicon.list.length < 10) {
+      if ((decompose = process.exec(searchResult[0])) != null) {
+        lexicon.addLexeme({
+          word: decompose[1],
+          reading: decompose[3],
+        }).classes.addClass({
+        }).definitions.addDefinition({
+          sense: decompose[4],
+        });
+        //console.log(Object.keys(searchResult), searchResult.length);
+      }
+    }
+  }).then(function () {
+    return lexicon;
+  });
+};
+offline.cedict2 = function (lexicon, text, loader) {
+  var separator = '[ \[]';
+  var query = new RegExp('^' + separator + '*(' + text + ')' + separator + '*$','igm');
+  switch ('b') {
+    case 'a': query = new RegExp('^.*(' + text + ').*$','igm'); break;
+    case 'c': query = new RegExp('^.*(' + text + ').*$','igm'); break;
+  }
+  return loader(function (last, chunk) {
+    var toProcess = last + chunk;
+    var result = [];
+    var process = /^([^#]\S*) (\S+) \[(.+)\] \/(.+)\/$/;
+    var searchResult, decompose;
+    while ((searchResult = query.exec(toProcess)) != null && result.length < 10) {
+      if ((decompose = process.exec(searchResult[0])) != null) {
+        //console.log(decompose);
+        lexicon.addLexeme({
+          word: decompose[1],
+          reading: decompose[3],
+        }).classes.addClass({
+        }).definitions.addDefinition({
+          sense: decompose[4],
+        });
+        //console.log(lexicon);
+        //console.log(Object.keys(searchResult), searchResult.length);
+      }
+      //console.log(regex);
+      //console.log([stuff[0], stuff[1]], stuff.length);
+    }
+  }).then(function () {
+    return lexicon;
+  });
+};
+
+online.goo = function (list, text, fetcher) {
+  var url = 'https://dictionary.goo.ne.jp/srch/jn/';
+  return(fetcher(url + encodeURIComponent(text) + '/m1u')
+    .then(function (data) {
+      console.log(data);
+    }).catch(output.processError)
+  );
+};
+
+online.jisho = function (lexicon, text, fetcher) {
   var url = 'http://jisho.org/api/v1/search/words?keyword=';
   ////var benchmark1 = new Date().getTime();
-  return fetcher(url + encodeURIComponent(text))
+  return(fetcher(url + encodeURIComponent(text))
     .then(output.processJson)
     .then(function (data) {
       if (data.meta.status === 200) {
@@ -49,7 +138,7 @@ online.jisho = function (list, text, fetcher) {
         ////console.log('Request took ' + (benchmark2 - benchmark1));
         data.data.forEach(function (entry) {
           var primaryReading = entry.japanese[0];
-          var senseList = list.addLexeme({
+          var senseList = lexicon.addLexeme({
             word: primaryReading.word,
             reading: primaryReading.reading,
             allographes: entry.japanese
@@ -100,11 +189,12 @@ online.jisho = function (list, text, fetcher) {
         });
         // Rank readings?
 
-        return list;
+        return lexicon;
       } else {
         throw new Error('Jisho request fail: ' + data.meta);
       }
-    }).catch(output.processError);
+    }).catch(output.processError)
+  );
 };
 
 //*/

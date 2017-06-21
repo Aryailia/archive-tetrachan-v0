@@ -25,6 +25,8 @@ var $ = require('../../lib/Compose/compose.js');
 const _oxfordHeaders = {
   port: 443,
   headers: {
+    'Content-Type': 'application/x-www-form-urlencoded',
+    'Content-Length': 0,
     Accept: 'application/json',
     app_id: config.oed_application_id,
     app_key: config.oed_application_key,
@@ -46,7 +48,6 @@ dicts.web.oxford = function (results, text, fetcher) {
           });
           lexicalEntry.entries.forEach(function (entry) {
             entry.senses.forEach(function (sense) { // Not sure when we get
-              console.log(sense.hasOwnProperty('definitions'));
               if (sense.hasOwnProperty('definitions')) { // Normal Case
                 category.definitions.addDefinition({
                   sense: sense.definitions.join('; '),

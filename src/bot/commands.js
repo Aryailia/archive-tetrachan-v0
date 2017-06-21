@@ -3,6 +3,7 @@
 const IS_DEVELOPMENT = process.argv[2] &&
   process.argv[2].trim().toLowerCase() === 'development'; 
 
+const fs =require('fs');
 const Url = require('url');
 const Protocol = {
   'https:': require('https'),
@@ -45,7 +46,7 @@ _addCommand('en]jp', '', function (parameter, message) {
 _addCommand('jp]en', '', commands.jisho);
 
 _addCommand('oed', '', function (text, message) {
-  Dictionaries.onlineLookup('oxford', text, _onlineRequest)
+  Dictionaries.onlineLookup('oxford', text, '', _onlineRequest)
     .then(function (readingList) { // Process readingList structure
       return _formatAPI(readingList).join('\n\n');
     }).then(function (str) { // Output
@@ -55,6 +56,53 @@ _addCommand('oed', '', function (text, message) {
       console.error(err);
     });
 });
+
+
+_addCommand('goo', '', function (text, message) {
+  Dictionaries.onlineLookup('goo', text, '', _onlineRequest)
+    //.then(function (readingList) { // Process readingList structure
+    //  return _formatAPI(readingList).join('\n\n');
+        //.filter(function (entry) {
+        //  entry.reading ===
+        //
+        //})
+    //})
+    .then(function (str) { // Output
+      //wrapper.massMessage(str, message.channel.send);
+      message.channel.send(str);
+    }).catch(function (err) {
+      console.error(err);
+    });
+});
+
+_addCommand('cedict', '', function (text, message) {
+  Dictionaries.offlineLookup('cedict', text, '', _offlineLoad)
+    .then(function (readingList) { // Process readingList structure
+      return _formatAPI(readingList).join('\n\n');
+    }).then(function (str) { // Output
+      //wrapper.massMessage(str, message.channel.send);
+      //console.log(str);
+      message.channel.send(str);
+    }).catch(function (err) {
+      console.error(err);
+    });
+});
+
+function _offlineLoad(processBuffer) {
+  return new Promise(function (resolve, reject) {
+    const stream = fs.createReadStream('./dicts/cedict_ts-2017-06-19.u8');
+    let last = '';
+    stream.setEncoding('utf8');
+    stream.on('data', function (chunk) {
+      processBuffer(last, chunk);
+      last = chunk;
+    });
+    stream.on('end', function () {
+      resolve();
+    });
+  });
+}
+
 
 function _addCommand(command, documentation, fn) {
   if (IS_DEVELOPMENT) {
@@ -94,12 +142,14 @@ const requestDefaults = {
 
 function _onlineRequest(requestUrl, options) {
   const urlObj = Url.parse(requestUrl);
-  const request = new Promise(function (resolve, reject) {
+  return new Promise(function (resolve, reject) {
     const headers = Utils.settingsOver(requestDefaults, options);
+    headers.protocol = urlObj.protocol;
     headers.hostname = urlObj.hostname;
     headers.path = urlObj.path;
     
     Protocol[urlObj.protocol].get(headers, function(response) {
+      //response.setEncoding('utf8');
       if (response.statusCode == 200) {
         var body = '';
         response.on('data', function (data) {
@@ -115,7 +165,6 @@ function _onlineRequest(requestUrl, options) {
       }
     });
   });
-  return request;
 }
 
 module.exports = commands;
