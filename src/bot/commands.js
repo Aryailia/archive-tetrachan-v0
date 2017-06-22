@@ -61,6 +61,17 @@ _addCommand('oed', '', function (text, message) {
     });
 });
 
+_addCommand('so-mdbg', '', function (text, message) {
+  Dictionaries.onlineLookup('so-mdbg', text, '', _onlineRequest)
+    .then(function (str) { // Process readingList structure
+      var url = 'https://www.mdbg.net/chinese/rsc/img/stroke_anim/' + text.charCodeAt(0) +  '.gif';
+      message.channel.send({ file: url, });
+    }).catch(function (err) {
+      message.channel.send(`Cannot find stroke order image for '${text}' on MDBG`);
+      console.error(err);
+    });
+});
+
 
 _addCommand('goo', '', function (text, message) {
   // https://dictionary.goo.ne.jp/freewordsearcher.html?MT=君&mode=1&kind=jn

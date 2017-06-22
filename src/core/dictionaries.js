@@ -238,6 +238,11 @@ online.goo = function (list, text, fetcher) {
   return Promise.resolve('50');
 };
 
+online['so-mdbg'] = function (lexicon, text, fetcher) {
+  var url = 'https://www.mdbg.net/chinese/rsc/img/stroke_anim/';
+  return fetcher(url + text.charCodeAt(0) + '.gif');
+};
+
 online.jisho = function (lexicon, text, fetcher) {
   var url = 'http://jisho.org:80/api/v1/search/words?keyword=';
   ////var benchmark1 = new Date().getTime();
