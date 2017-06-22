@@ -4,14 +4,14 @@
   "description": "Dictionary Lookup",
   "main": "index.js",
   "scripts": {
-    "compose":  "npm run clean-compose && webpack --config config/wp-compose.js  && npm run test-compose",
+    "compose": "npm run clean-compose && webpack --config config/wp-compose.js  && npm run test-compose",
     "discord": "node src/bot.js runtime",
     "setdevelopment": "set NODE_ENV=development",
     "setproduction": "set NODE_ENV=production",
     "server": "node src/website/nodeserver.js",
     "dev-discord": "node src/bot.js development",
     "dev-website": "npm run clean-compose && npm run clean-website && webpack --config config/wp-webpage.js --watch",
-    "dev-compose":  "npm run clean-compose && webpack --config config/wp-compose.js --watch && npm run test-compose",
+    "dev-compose": "npm run clean-compose && webpack --config config/wp-compose.js --watch && npm run test-compose",
     "clean": "npm run clean-compose && npm run clean-discord",
     "clean-botwrapper": "rimraf ./node_modules/botwrapper.js",
     "clean-compose": "rimraf ./dist/compose.min.js",
@@ -21,14 +21,15 @@
   "author": "Aryailia",
   "license": "MIT",
   "devDependencies": {
-    "eslint": "^3.19.0",
+    "eslint": "^4.0.0",
     "rimraf": "^2.6.1",
     "tape": "^4.6.3",
-    "uglify-js": "^3.0.5",
-    "webpack": "^2.5.1"
+    "uglify-js": "^3.0.18",
+    "webpack": "^2.6.1"
   },
   "dependencies": {
     "discord.js": "^11.1.0",
-    "lodash": "^4.17.4"
+    "follow-redirects": "^1.2.4",
+    "htmlparser2": "^3.9.2"
   }
 }

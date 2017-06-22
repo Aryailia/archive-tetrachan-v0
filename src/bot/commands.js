@@ -5,7 +5,10 @@ const IS_DEVELOPMENT = process.argv[2] &&
 
 const fs =require('fs');
 const Url = require('url');
-const HTTPS = require('https');
+//const Protocol = {
+//  'https:': require('follow-redirects/https'),
+//  'http:': require('follow-redirects/http'),
+//};
 const Protocol = {
   'https:': require('https'),
   'http:': require('http'),
@@ -60,6 +63,7 @@ _addCommand('oed', '', function (text, message) {
 
 
 _addCommand('goo', '', function (text, message) {
+  // https://dictionary.goo.ne.jp/freewordsearcher.html?MT=君&mode=1&kind=jn
   Dictionaries.onlineLookup('goo', text, '', _onlineRequest)
     //.then(function (readingList) { // Process readingList structure
     //  return _formatAPI(readingList).join('\n\n');
@@ -150,7 +154,7 @@ function _onlineRequest(requestUrl, options) {
     
     Protocol[urlObj.protocol].get(headers, function(response) {
       response.setEncoding('utf8');
-      if (response.statusCode == 200) {
+      if (response.statusCode === 200) {
         var body = '';
         response.on('data', function (data) {
           body += data;
@@ -160,7 +164,7 @@ function _onlineRequest(requestUrl, options) {
           reject(error);
         });
       } else { // Bad error code
-        reject(`${response.statusCode}: No such entry found`);
+        reject(`Error code ${response.statusCode}`);
       }
     }).on('error', function (error) { // send error
       reject(error);

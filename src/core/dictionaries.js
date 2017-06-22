@@ -4,6 +4,8 @@
 // https://developer.chrome.com/extensions/messaging#external
 // https://stackoverflow.com/questions/42108782/firefox-webextensions-get-local-files-content-by-path
 // https://stackoverflow.com/questions/13544179/jsdom-document-queryselector-enabled-but-is-missing-from-document
+// https://github.com/tautologistics/node-htmlparser
+// https://github.com/fb55/htmlparser2/issues/200
 'use strict';
 
 /**
@@ -13,8 +15,46 @@
  * @todo polyfill for fetch (old for extension)
  */
 // C++ analogy: Lexicon is like a header file and this is the implementation
+var htmlparser = require('htmlparser2');
+var selector = require('./selector.js');
 var lexicon = require('./lexicon.js');
 var $ = require('../../lib/Compose/compose.js');
+
+/*$.flow = function () {
+  var fn = arguments;
+  return function (input) {
+    Object.keys(fn).forEach(function (index) {
+      input = fn[index](input);
+    });
+    return input;
+  };
+};*/
+
+function _parseHtml(str) {
+  var output;
+  new htmlparser.Parser(new htmlparser.DomHandler(function (error, dom) {
+    if (error) {
+      throw new Error('Error: htmlparser - ' + error);
+      //output = undefined;
+    } else {
+      output = dom;
+    }
+  })).parseComplete(str);
+  return output;
+}
+
+//htmlparser.
+
+function _selectTag(property, tag, node) {
+  return $.filter(function (child) {
+    return child[property] === tag;
+  }, node);
+}
+function _selectAttribs(property, tag, node) {
+  return $.filter(function (child) {
+    return child.hasOwnProperty('attribs') && child.attribs[property] === tag;
+  }, node);
+}
 
 var output = {
   processJson: function (response) {
@@ -86,13 +126,113 @@ offline.cedict = function (lexicon, text, loader) {
   });
 };
 
+/*function _gooParseEntryPage(wordPage) {
+  var html = _parseHtml(wordPage.match(/<!-- Leaf -->[\S\s]+<!-- \/Leaf -->/));
+  var entry = _selectTag('name', 'div', html)[0];
+  var body = _selectAttribs('class', 'content-box visible',
+    _selectTag('name', 'div', entry.children)[0].children
+  )[0].children;
+  var explanation = _selectAttribs('class', 'explanation',
+    _selectAttribs('class', 'kokugo', body)[0].children
+  )[0].children;
+
+  var title = $(_selectTag('name', 'h1', entry.children)[0].children)
+    .filter(function (child) { return child.hasOwnProperty('data'); })
+    .map(function (child) { return child.data; } )
+    .value().join('');
+  var definitions = _selectTag('name', 'ol', explanation).map(x => x.children);
+  var synonyms = _selectTag('name', 'div', explanation)[0];
+  var partOfSpeech =
+    //_selectTag('name', 'a',
+      //_selectTag('name', 'li',
+        _selectAttribs('class', 'list-tag-b', body)[0].children
+      //)[0].children
+    //)[0]//.children[0].data;
+    
+  //domutils.getText(partOfSpeech).trim();  
+  console.log('---');
+  console.log(selector.query(['div', '#content-box visible', '.list-tag-b'], html)[0].children);
+  console.log('title', title);
+  //console.log('body', definitions);
+  //console.log('class', partOfSpeech);
+  //console.log(domutils.find(function (a) {console.log(a);}, body));
+}*/
+
+function _gooParseEntryPage(wordPage) {
+  var html = _parseHtml(wordPage.match(/<!-- Leaf -->[\S\s]+<!-- \/Leaf -->/));
+  var entry = _selectTag('name', 'div', html)[0];
+  var body = selector.query(['div', '#content-box visible'], html)[0].children;
+  var explanation = _selectAttribs('class', 'explanation',
+    _selectAttribs('class', 'kokugo', body)[0].children
+  )[0].children;
+
+  var title = $(_selectTag('name', 'h1', entry.children)[0].children)
+    .filter(function (child) { return child.hasOwnProperty('data'); })
+    .map(function (child) { return child.data; } )
+    .value().join('');
+  var definitions = _selectTag('name', 'ol', explanation).map(x => x.children);
+  var synonyms = _selectTag('name', 'div', explanation)[0];
+  var partOfSpeech =
+    //_selectTag('name', 'a',
+      //_selectTag('name', 'li',
+        _selectAttribs('class', 'list-tag-b', body)[0].children
+      //)[0].children
+    //)[0]//.children[0].data;
+    
+  //domutils.getText(partOfSpeech).trim();  
+  console.log('---');
+  console.log('title', title);
+  //console.log('body', definitions);
+  //console.log('class', partOfSpeech);
+  //console.log(domutils.find(function (a) {console.log(a);}, body));
+}
+
 online.goo = function (list, text, fetcher) {
-  text = '君';
-  var url = 'https://dictionary.goo.ne.jp:443/srch/jn/';
-  console.log(url);
-  (fetcher(url + encodeURIComponent(text) + '/m1u/')
-    .then(function (data) {
-      console.log(data);
+  text = 'きみ';
+  var url = 'https://dictionary.goo.ne.jp:443';
+  //https://dictionary.goo.ne.jp/freewordsearcher.html?MT=君&mode=1&kind=jn
+  //https://dictionary.goo.ne.jp/srch/jn/%E3%81%8D%E3%81%BF/m1u/
+  //<li data-value="0">で始まる</li>
+  //<li data-value="1" class="NR-now">で一致する</li>
+  //<li data-value="2">で終わる</li>
+  //<li data-value="3">を説明文に含む</li>
+  //<li data-value="6">を見出しに含む</li>
+  var test = url + '/srch/jn/' + encodeURIComponent(text) + '/m1u/';
+  console.log(test);
+  (fetcher(test)
+  //(fetcher(url + '/srch/jn/' + text + '/m1u/')
+    .then(function (search) {
+      //var resultSection = search.match(/<ul class="list-search-a">[\S\s]*?<\/ul>/);
+      //console.log(resultSection);
+      var results = /<ul class="list-search-a">([\S\s]*?)<\/ul>/.exec(search);
+      //var 
+      console.log(search);
+      if (results === null) {
+        throw new Error('Error: goo - Regex could not parse output.');
+      }
+      return($(_parseHtml(results[1]))
+        .filter(function (node) { return node.name === 'li'; })
+        //.foreach(function (x) { console.log(x); }) // For testing
+        .map(function (liNode) { return _selectTag('name', 'a', liNode.children)[0]; })
+        .map(function (linkNode) { // Process links
+          var entry = _selectTag('name', 'dl', linkNode.children)[0];
+          return {
+            link: linkNode.attribs.href,
+            word: _selectTag('name', 'dt', entry.children)[0].children[0].name,
+            preview:
+              _selectAttribs('class', 'mean text-b', _selectTag('name', 'dd',
+                entry.children))[0].children[0].raw,
+          };
+        }).map(function (parsedSearch) {
+          var path = parsedSearch.link.replace(/[^/]*\/$/, '');
+          return(fetcher(url + path)
+            .then(_gooParseEntryPage)
+            .catch(output.processError)
+          );
+        }).value()
+      );
+    }).then (function (results) {
+      //results.forEach(x => console.log(x));
     }).catch(output.processError)
   );
   return Promise.resolve('50');
