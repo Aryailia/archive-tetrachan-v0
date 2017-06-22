@@ -8,11 +8,15 @@ This readme will mostly be to keep track of things.
 # Current Status #
 Branches
 * Discord bot (Node app, ES6+ okay)
-    * Jisho
-    * CC-CEDICT
-    * Oxford English Dictionary
-    * Goo, currently WIP
-        * Have yet to figure out how I want to go about parsing an HTML document (JSDom perhaps)
+    * Jisho (API)
+    * CC-CEDICT (Local)
+    * Oxford English Dictionary (API)
+    * Goo (web crawling)
+        * partically complete and partially transitioning over to wrapper
+        * using htmlparser2 and made a small wrapper for traversing it
+        * Goo throttles requests, unsure of what the cooldown is
+    * Stroke order (MDBG)
+
 * Plugin (WebExtensions, ES5 only!)
     * Had, Popup, Options, Templating sort of half implemented and working but then started on making a build environment and discord bot
     * Haven't yet refactored code to work with webpack build environment

@@ -161,7 +161,7 @@ offline.cedict = function (lexicon, text, loader) {
 function _gooParseEntryPage(wordPage) {
   var html = _parseHtml(wordPage.match(/<!-- Leaf -->[\S\s]+<!-- \/Leaf -->/));
   var entry = _selectTag('name', 'div', html)[0];
-  var body = selector.query(['div', '#content-box visible'], html)[0].children;
+  var body = selector.stepQuery(['div', '.content-box visible'], html)[0].children;
   var explanation = _selectAttribs('class', 'explanation',
     _selectAttribs('class', 'kokugo', body)[0].children
   )[0].children;
