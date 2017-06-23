@@ -43,14 +43,14 @@ var lexicon = {
       [SUB_CATEGORY_3]: { outline: {
         // The following are the accessible properties for word classes
         // And can be specified by options
-        sense: '',
+        meaning: '',
         examples: [], }, // Last of options
 
         //list: [], // This gets added _factory()
         [SUB_CATEGORY_4]: { outline: {
           // The following are the accessible properties for word classes
           // And can be specified by options
-          subsense: '', }, // Last of option
+          submeaning: '', }, // Last of option
         },
 
         mixin: { // For definitions

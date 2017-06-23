@@ -103,7 +103,7 @@ offline.cedict = function (lexicon, text, loader) {
           reading: decompose[3],
         }).classes.add({
         }).senses.add({
-          sense: decompose[4],
+          meaning: decompose[4],
         });
         //console.log(Object.keys(searchResult), searchResult.length);
       }
@@ -148,7 +148,7 @@ var weblioType = {
 
     var lexeme = warehouse.add(headwordEntry);
     var wordClass = lexeme.classes.add({ category: partOfSpeech });
-    wordClass.senses.add({ sense: entry });
+    wordClass.senses.add({ meaning: entry });
   },
 
   // This is actually the same as the enumeratedCategories case
@@ -167,7 +167,7 @@ var weblioType = {
     nodeList.forEach(function (node) {
       var entry = selector.getText([node.children[_getLastDivIndex(node.children)]]);
       wordClass.senses.add({
-        sense: entry,
+        meaning: entry,
       });
     });
   },
@@ -183,17 +183,17 @@ var weblioType = {
     
     var mainSense = text.replace(circledNumbers, '').trim();
     if (mainSense != '') {
-      wordClass.senses.add({ sense: mainSense });
+      wordClass.senses.add({ meaning: mainSense });
     }
     
     var senseMatch, subsenseMatch, subsensePattern, sense;
     while ((senseMatch = circledNumbers.exec(text)) != null) {
       sense = wordClass.senses.add({
-        sense: senseMatch[1].replace(circledKatakana, '').trim(),
+        meaning: senseMatch[1].replace(circledKatakana, '').trim(),
       });
       subsensePattern = new RegExp(circledKatakana); // Didn't actually test if this is necessary
       while ((subsenseMatch = subsensePattern.exec(senseMatch[1])) != null) {
-        sense.subsenses.add({ subsense: subsenseMatch[1].trim() });
+        sense.subsenses.add({ submeaning: subsenseMatch[1].trim() });
       }
     }
   },
@@ -218,7 +218,7 @@ var weblioType = {
         // Then split across the separator and add each as their own example
         // Todo: change over to example and not meaning
         selector.getText(isKuTest.splice(1)).split('・').forEach(function (sample) {
-          wordClass.senses.add({ sense: sample });
+          wordClass.senses.add({ meaning: sample });
         });
       } else {
         lastDiv = hasClassTest[hasClassTest.length - 1]; // {hasClassText} is only divs
@@ -229,7 +229,7 @@ var weblioType = {
           hasClassTest.forEach(function (node) {
             var entry = selector.getText([node.children[_getLastDivIndex(node.children)]]);
             wordClass.senses.add({
-              sense: entry,
+              meaning: entry,
             });
           });
         } else { // Then we have classes we can add
@@ -466,7 +466,7 @@ online.jisho = function (lexicon, text, fetcher) {
               // And add all the definitions to that word class group
               classChunk.forEach(function (wordClass) {
                 group.add({
-                  sense: wordClass.english_definitions.join('; '),
+                  meaning: wordClass.english_definitions.join('; '),
                   examples: [
 
                   ],

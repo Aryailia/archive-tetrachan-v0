@@ -49,19 +49,19 @@ dicts.web.oxford = function (results, text, fetcher) {
             entry.senses.forEach(function (sense) { // Not sure when we get
               if (sense.hasOwnProperty('definitions')) { // Normal Case
                 category.senses.add({
-                  sense: sense.definitions.join('; '),
+                  meaning: sense.definitions.join('; '),
                   examples: sense.examples,
                 });
               } else if (sense.hasOwnProperty('crossReferenceMarkers')) { // Non-standard case
                 category.senses.add({
-                  sense: sense.crossReferenceMarkers.join('; '),
+                  meaning: sense.crossReferenceMarkers.join('; '),
                   examples: sense.examples,
                 });
               }
               if (sense.hasOwnProperty('subsenses')) { // Not sure what subsenses are for
                 sense.subsenses.forEach(function (subsense) {
                   category.senses.add({
-                    sense: subsense.definitions.join('; '),
+                    meaning: subsense.definitions.join('; '),
                     examples: subsense.examples,
                   });
                 });

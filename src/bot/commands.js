@@ -156,13 +156,13 @@ function _formatAPI(apiOutput) {
         : `***${wordClass.category.trim()}***`;
       const senses = $.map(function (sense, i) {
         const subsenseCluster = $.map(function (subsenseObj, j) {
-          return `\u3000\u3000${i + 1}.${j + 1}. ${subsenseObj.subsense}`;
+          return `\u3000\u3000${i + 1}.${j + 1}. ${subsenseObj.submeaning}`;
         }, sense.subsenses.list).join('\n');
         const subsenseString = subsenseCluster.length > 0
           ? `${subsenseCluster}\n`
           : subsenseCluster;
 
-        return `${i + 1}. ${sense.sense}\n${subsenseString}`;
+        return `${i + 1}. ${sense.meaning}\n${subsenseString}`;
       }, wordClass.senses.list).join('\n');
 
       return partOfSpeech + '\n' + senses;
