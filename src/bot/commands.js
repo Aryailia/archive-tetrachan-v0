@@ -14,7 +14,6 @@ const Protocol = {
   'http:': require('http'),
 };
 const botwrapper = require('../../lib/bothelpers/botwrapper.js');
-const Utils = require('../core/utils.js');
 const Dictionaries = require('./dictwrapper.js');
 //const unicode = require(path.resolve('./src/core/unicode.js'));
 const $ = require('../../lib/Compose/compose.js');
@@ -180,7 +179,7 @@ const requestDefaults = {
 function _onlineRequest(requestUrl, options) {
   const urlObj = Url.parse(requestUrl);
   return new Promise(function (resolve, reject) {
-    const headers = Utils.settingsOver(requestDefaults, options);
+    const headers = botwrapper.imposeKeyValueStructure(requestDefaults, options);
     headers.port = urlObj.port; // Deferring port setting to the URL
     headers.hostname = urlObj.hostname;
     headers.path = urlObj.path;

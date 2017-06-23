@@ -38,29 +38,29 @@ dicts.web.oxford = function (results, text, fetcher) {
     .then(dicts.processJson)
     .then(function (data) {
       data.results.forEach(function (result) {
-        const lexeme = results.addLexeme({
+        const lexeme = results.add({
           word: result.word,
         });
         result.lexicalEntries.forEach(function (lexicalEntry) {
-          const category = lexeme.classes.addClass({
+          const category = lexeme.classes.add({
             category: lexicalEntry.lexicalCategory,
           });
           lexicalEntry.entries.forEach(function (entry) {
             entry.senses.forEach(function (sense) { // Not sure when we get
               if (sense.hasOwnProperty('definitions')) { // Normal Case
-                category.definitions.addDefinition({
+                category.definitions.add({
                   sense: sense.definitions.join('; '),
                   examples: sense.examples,
                 });
               } else if (sense.hasOwnProperty('crossReferenceMarkers')) { // Non-standard case
-                category.definitions.addDefinition({
+                category.definitions.add({
                   sense: sense.crossReferenceMarkers.join('; '),
                   examples: sense.examples,
                 });
               }
               if (sense.hasOwnProperty('subsenses')) { // Not sure what subsenses are for
                 sense.subsenses.forEach(function (subsense) {
-                  category.definitions.addDefinition({
+                  category.definitions.add({
                     sense: subsense.definitions.join('; '),
                     examples: subsense.examples,
                   });

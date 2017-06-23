@@ -11,7 +11,7 @@ var SUB_CATEGORY_4 = 'subsenses';
 
 var _lexeme, _classes, _senses, _subsenses;
 // Outline is all the possible entries for options at that level
-// Note: .addDefinition() accepts a string, not an object unlike the others
+// Note: .add() accepts a string, not an object unlike the others
 // 
 // Indentation levels are for programmers who want to use the API
 // Everything on the same indentation level is what you can expect to have
@@ -61,7 +61,7 @@ var lexicon = {
         },
       },
       mixin: { // For definitions
-        addDefinition: function (definitions, options) {
+        add: function (definitions, options) {
           var obj = settingsOver(_senses.outline, options);
           obj[SUB_CATEGORY_4] = _factory(_senses.mixin);
           definitions.list.push(obj);
@@ -70,7 +70,7 @@ var lexicon = {
       },
     },
     mixin: { // For word classes
-      addClass: function (wordClassGroup, options) {
+      add: function (wordClassGroup, options) {
         var obj = settingsOver(_classes.outline, options);
         obj[SUB_CATEGORY_3] = _factory(_classes.mixin);
         wordClassGroup.list.push(obj);
@@ -80,7 +80,7 @@ var lexicon = {
   },
 
   mixin: { // For lexemes
-    addLexeme: function (lexemesList, options) {
+    add: function (lexemesList, options) {
       var obj = settingsOver(_lexeme.outline, options);
       obj[SUB_CATEGORY_2] = _factory(_lexeme.mixin);
       lexemesList.list.push(obj);

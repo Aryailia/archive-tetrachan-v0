@@ -98,11 +98,11 @@ offline.cedict = function (lexicon, text, loader) {
     var searchResult, decompose;
     while ((searchResult = query.exec(toProcess)) != null  && lexicon.list.length < 10) {
       if ((decompose = process.exec(searchResult[0])) != null) {
-        lexicon.addLexeme({
+        lexicon.add({
           word: decompose[1],
           reading: decompose[3],
-        }).classes.addClass({
-        }).definitions.addDefinition({
+        }).classes.add({
+        }).definitions.add({
           sense: decompose[4],
         });
         //console.log(Object.keys(searchResult), searchResult.length);
@@ -146,9 +146,9 @@ var weblioType = {
     var partOfSpeech = selector.getText(partOfSpeechNodeList.slice(0, lastDivIndex));
     var entry = selector.getText(nodeList);
 
-    var lexeme = warehouse.addLexeme(headwordEntry);
-    var wordClass = lexeme.classes.addClass({ category: partOfSpeech });
-    wordClass.definitions.addDefinition({ sense: entry });
+    var lexeme = warehouse.add(headwordEntry);
+    var wordClass = lexeme.classes.add({ category: partOfSpeech });
+    wordClass.definitions.add({ sense: entry });
   },
 
   // This is actually the same as the enumeratedCategories case
@@ -162,11 +162,11 @@ var weblioType = {
     var partOfSpeech = selector.getText(partOfSpeechNodeList.slice(0, lastDivIndex));
     selector.print(['parent','next','prev'], partOfSpeechNodeList);*/
     
-    var lexeme = warehouse.addLexeme(headwordEntry);
-    var wordClass = lexeme.classes.addClass({ });
+    var lexeme = warehouse.add(headwordEntry);
+    var wordClass = lexeme.classes.add({ });
     nodeList.forEach(function (node) {
       var entry = selector.getText([node.children[_getLastDivIndex(node.children)]]);
-      wordClass.definitions.addDefinition({
+      wordClass.definitions.add({
         sense: entry,
       });
     });
@@ -183,12 +183,12 @@ var weblioType = {
     
     var mainSense = text.replace(circledNumbers, '').trim();
     if (mainSense != '') {
-      wordClass.definitions.addDefinition({ sense: mainSense });
+      wordClass.definitions.add({ sense: mainSense });
     }
     
     var senseMatch, subsenseMatch, subsensePattern, sense;
     while ((senseMatch = circledNumbers.exec(text)) != null) {
-      sense = wordClass.definitions.addDefinition({
+      sense = wordClass.definitions.add({
         sense: senseMatch[1].replace(circledKatakana, '').trim(),
       });
       subsensePattern = new RegExp(circledKatakana); // Didn't actually test if this is necessary
@@ -202,7 +202,7 @@ var weblioType = {
   enumeratedCategories: function (warehouse, headwordEntry, parentNodeList, nodeList) {
     var entryList = selector.stepQuery(['div', 'div'], parentNodeList);
     //selector.print(['parent','next','prev'], classNodeList);
-    var lexeme = warehouse.addLexeme(headwordEntry);
+    var lexeme = warehouse.add(headwordEntry);
     entryList.forEach(function (classNode) {
       var wordClass, lastDiv;
       var hasClassTest = selector.stepQuery(['*','div'], classNode.children);
@@ -213,22 +213,22 @@ var weblioType = {
       selector.print(['parent','next','prev'], isKuTest);
       //console.log()
       if (isKuTest[0].data === '［句］') {
-        wordClass = lexeme.classes.addClass({ category: '句' });
+        wordClass = lexeme.classes.add({ category: '句' });
         // Splice(1) skips the first as the rest will be examples
         // Then split across the separator and add each as their own example
         // Todo: change over to example and not meaning
         selector.getText(isKuTest.splice(1)).split('・').forEach(function (sample) {
-          wordClass.definitions.addDefinition({ sense: sample });
+          wordClass.definitions.add({ sense: sample });
         });
       } else {
         lastDiv = hasClassTest[hasClassTest.length - 1]; // {hasClassText} is only divs
         //selector.print(['parent','next','prev'], [lastDiv.children[0]]);
         
         if (lastDiv.children[0].hasOwnProperty('children')) { // Then it's already listing senses
-          wordClass = lexeme.classes.addClass({});
+          wordClass = lexeme.classes.add({});
           hasClassTest.forEach(function (node) {
             var entry = selector.getText([node.children[_getLastDivIndex(node.children)]]);
-            wordClass.definitions.addDefinition({
+            wordClass.definitions.add({
               sense: entry,
             });
           });
@@ -239,7 +239,7 @@ var weblioType = {
           var partOfSpeech = selector.getText(partOfSpeechNodeList.slice(0, lastDivIndex));
           var entry = partOfSpeechNodeList[lastDivIndex].children;
 
-          wordClass = lexeme.classes.addClass({ category: partOfSpeech });
+          wordClass = lexeme.classes.add({ category: partOfSpeech });
           // ughhhhhhhhhhhhhhhhhhhhhhhhh, still has multiple cases want to get into habit of self calling
           // きみ, みる are examples
           weblioType.neoMultiSense(wordClass, entry);
@@ -260,16 +260,16 @@ var weblioType = {
 
       //console.log('---');
       //console.log(header);
-      var lexeme = warehouse.addLexeme({
+      var lexeme = warehouse.add({
         word: header,
       });
-      var wordClass = lexeme.classes.addClass({});
+      var wordClass = lexeme.classes.add({});
       weblioType.neoMultiSense(wordClass, entry);
       //selector.print(['parent','next','prev'], entry);
     
     });
-    //var lexeme = warehouse.addLexeme({});
-    //var wordClass = lexeme.classes.addClass({});
+    //var lexeme = warehouse.add({});
+    //var wordClass = lexeme.classes.add({});
     
   },
 };
@@ -429,7 +429,7 @@ online.jisho = function (lexicon, text, fetcher) {
         ////console.log('Request took ' + (benchmark2 - benchmark1));
         data.data.forEach(function (entry) {
           var primaryReading = entry.japanese[0];
-          var senseList = lexicon.addLexeme({
+          var senseList = lexicon.add({
             word: primaryReading.word,
             reading: primaryReading.reading,
             allographes: entry.japanese
@@ -460,12 +460,12 @@ online.jisho = function (lexicon, text, fetcher) {
             // sense (definitions) into said group
             }).foreach(function (classChunk) {
               // Add and get back the part-of-speech (word class) group
-              var group = senseList.addClass({
+              var group = senseList.add({
                 category: classChunk[classChunk.length - 1].parts_of_speech
               }).definitions;
               // And add all the definitions to that word class group
               classChunk.forEach(function (wordClass) {
-                group.addDefinition({
+                group.add({
                   sense: wordClass.english_definitions.join('; '),
                   examples: [
 
