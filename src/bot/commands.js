@@ -146,8 +146,8 @@ function _addCommand(command, documentation, fn) {
 
 function _formatAPI(apiOutput) {
   return $(apiOutput.list).map(function (lexeme) {
-    const reading = lexeme.word == undefined
-      ? `**${lexeme.reading}**`
+    const reading = lexeme.reading == undefined || lexeme.reading === ''
+      ? `**${lexeme.word}**`
       : `**${lexeme.word}** (${lexeme.reading})`;
     
     const wordClassCluster = $(lexeme.classes.list).map(function (wordClass) {
@@ -163,7 +163,7 @@ function _formatAPI(apiOutput) {
           : subsenseCluster;
 
         return `${i + 1}. ${sense.sense}\n${subsenseString}`;
-      }, wordClass.definitions.list).join('\n');
+      }, wordClass.senses.list).join('\n');
 
       return partOfSpeech + '\n' + senses;
     }).value().join('\n');

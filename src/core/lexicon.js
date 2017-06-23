@@ -6,7 +6,7 @@
 var settingsOver = require('./utils.js').settingsOver;
 var SUB_CATEGORY_1 = 'lexeme';
 var SUB_CATEGORY_2 = 'classes';
-var SUB_CATEGORY_3 = 'definitions';
+var SUB_CATEGORY_3 = 'senses';
 var SUB_CATEGORY_4 = 'subsenses';
 
 var _lexeme, _classes, _senses, _subsenses;
