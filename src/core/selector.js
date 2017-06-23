@@ -39,8 +39,18 @@ var commands = {
   },
 
   cssClass: function _cssClass(className) {
+    return commands.attrib('class', className);
+  },
+
+  prop: function _cssClass(property, value) {
     return function (node) {
-      return node.hasOwnProperty('attribs') && node.attribs.class === className;
+      return node[property] === value;
+    };
+  },
+
+  attrib: function _cssClass(attribute, value) {
+    return function (node) {
+      return node.hasOwnProperty('attribs') && node.attribs[attribute] === value;
     };
   },
 
@@ -53,19 +63,13 @@ var commands = {
    * Note: The . selector currently only tells it to access class attribute,
    * doesn't actually test for multiple classes
    * 
-   * @param {string} selector Selector to search for
-   * @param {Array<object>} dom DOM Tree to iterate over
+   * @param {function(object):boolean} predicate Selector to search for
+   * @param {Array<object>} nodeList DOM Tree to iterate over
    * @returns {Array<object>} List of nodes
    */
-  find: function (selector, dom) {
+  find: function (predicate, nodeList) {
     var result = [];
-    if (selector.startsWith('#')) {
-      _find(result, dom, commands.byId(selector.substr(1)));
-    } else if (selector.startsWith('.')) {
-      _find(result, dom, commands.cssClass(selector.substr(1)));
-    } else {
-      _find(result, dom, commands.htmlTag(selector));
-    }
+    _find(result, predicate, nodeList);
     return result;
   },
 
@@ -73,19 +77,39 @@ var commands = {
    * Can traverse DOM tree structure as deep as necessary. Loops through the
    * {selectorList} and does find per selector. Successive finds are on the
    * children of the results of previous finds.
-   * Parent nodes are included in search
    * 
    * Note: The . selector currently only tells it to access class attribute,
    * doesn't actually test for multiple classes
    * 
    * @param {Array<string>} selectorList Selectors to loop through
-   * @param {Array<object>} dom DOM Tree to iterate over
+   * @param {Array<object>} nodeList DOM Tree to iterate over
    * @returns {Array<object>} List of nodes
    */
-  query: function (selectorList, dom) {
-    var $dom = $(dom);
+  query: function (selectorList, nodeList) {
+    var $dom = $(nodeList);
     selectorList.forEach(function (selector) {
       $dom.filter(_hasChildren).map(function (entry) {
+        var temp;
+        //switch (selector.substr(0,1)) {
+        if (selector.startsWith('#')) {
+          commands.find(nodeList, commands.byId(selector.substr(1)));
+        } else if (selector.startsWith('.')) {
+          commands.find(nodeList, commands.cssClass(selector.substr(1)));
+        } else if (selector.startsWith('[')) {
+          temp = selector.match(/^\[([^=]+)=([^=]+)\]$/);
+          if (temp == null) {
+            throw new SyntaxError('query: the selector \'' + selector + '\' is malformed');
+          }
+          commands.find(nodeList, commands.attrib(temp[1], temp[2]));
+        } else if (selector.startsWith('{')) {
+          temp = selector.match(/^\{([^=]+)=([^=]+)\}$/);
+          if (temp == null) {
+            throw new SyntaxError('query: the selector \'' + selector + '\' is malformed');
+          }
+          commands.find(nodeList, commands.prop(temp[1], temp[2]));
+        } else {
+          commands.find(nodeList, commands.htmlTag(selector));
+        }
         return commands.find(selector, [entry]);
       }).flatten(1);
     });
@@ -94,33 +118,75 @@ var commands = {
 
   /**
    * Traverses in single steps to test if subnodes match the selectors in order
-   * Parent nodes are not included in the search
+   * If specify '*' string as a selector, it just goes to the children
    * 
    * Note: The . selector currently only tells it to access class attribute,
    * doesn't actually test for multiple classes
    * 
    * @param {Array<string>} selectorList Selectors to loop through
-   * @param {Array<object>} dom DOM Tree to iterate over
+   * @param {Array<object>} nodeList DOM Tree to iterate over
    * @returns {Array<object>} List of nodes
    */
-  stepQuery: function (selectorList, dom) {
-    var $dom = $(dom);
-    selectorList.forEach(function (selector) {
-      $dom.filter(_hasChildren).map(_toChildren).flatten(1);
+  stepQuery: function (selectorList, nodeList) {
+    var $dom = $(nodeList);
+    selectorList.forEach(function (selector, index) {
+      if (index > 0) { // Go to children on the join boundaries
+        $dom.filter(_hasChildren).map(_toChildren).flatten(1);
+      }
+      // Perform appropriate selector
       if (selector.startsWith('#')) {
         $dom.filter(commands.byId(selector.substr(1)));
       } else if (selector.startsWith('.')) {
         $dom.filter(commands.cssClass(selector.substr(1)));
-      } else {
+      } else if (selector !== '*') {
         $dom.filter(commands.htmlTag(selector));
       }
     });
     return $dom.value();
   },
+
+  getText: function (nodeList) {
+    var text = [];
+    _getText(text, nodeList);
+    return text.join('');
+  },
+
+  /**
+   * @param {Array<string>} ignoreList Properties to ignore
+   * @param {Array<object>} nodeList List of dom nodes to print
+   * @returns {void}
+   */
+  print: function (ignoreList, nodeList) {
+    var ignore = {};
+    ignoreList.forEach(key => ignore[key] = true);
+
+    nodeList.forEach(function (dom) {
+      var test = {};
+      Object.keys(dom).forEach(function (key) {
+        if (!ignore[key]) {
+          test[key] = dom[key];
+        }
+      });
+      console.log(test);
+    });
+  }
 };
 
+function _getText(result, nodeList) {
+  var index = -1;
+  var length = nodeList.length;
+  var entry;
+  while (++index < length) {
+    entry = nodeList[index];
+    result.push(entry.data == undefined ? '' : nodeList[index].data);
+    if (_hasChildren(entry)) {
+      _getText(result, entry.children);
+    }
+  }
+}
+
 function _hasChildren(node) {
-  return node.hasOwnProperty('children');
+  return node.hasOwnProperty('children') && node.children.length > 0;
 }
 
 function _toChildren(node) {
@@ -132,15 +198,15 @@ function _toChildren(node) {
  * test true against {predicate}
  * 
  * @param {Array} result Matching nodes are pushed into this
- * @param {Array<object>} dom The dom to match and who's children to match
+ * @param {Array<object>} nodeList The dom to match and who's children to match
  * @param {function(object):boolean} predicate Test an entry on some condition
  */
-function _find(result, dom, predicate) {
+function _find(result, predicate, nodeList) {
   var entry;
   var index = -1;
-  var length = dom.length;
+  var length = nodeList.length;
   while (++index < length) {
-    entry = dom[index];
+    entry = nodeList[index];
     if (predicate(entry)) {
       result.push(entry);
     }

@@ -13,6 +13,7 @@ const Protocol = {
   'https:': require('https'),
   'http:': require('http'),
 };
+const botwrapper = require('../../lib/bothelpers/botwrapper.js');
 const Utils = require('../core/utils.js');
 const Dictionaries = require('./dictwrapper.js');
 //const unicode = require(path.resolve('./src/core/unicode.js'));
@@ -49,12 +50,24 @@ _addCommand('en]jp', '', function (parameter, message) {
 });
 _addCommand('jp]en', '', commands.jisho);
 
+_addCommand('weblio', '', function (text, message) {
+  Dictionaries.onlineLookup('weblio', text, '', _onlineRequest)
+    .then(function (readingList) { // Process readingList structure
+      return _formatAPI(readingList).join('\n=========\n');
+    }).then(function (str) { // Output
+      botwrapper.massMessage([str], message.channel);
+      //message.channel.send(str);
+    }).catch(function (err) {
+      console.error(err);
+    });
+});
+
 _addCommand('oed', '', function (text, message) {
   Dictionaries.onlineLookup('oxford', text, '', _onlineRequest)
     .then(function (readingList) { // Process readingList structure
       return _formatAPI(readingList).join('\n\n');
     }).then(function (str) { // Output
-      //wrapper.massMessage(str, message.channel.send);
+      //botwrapper.massMessage(str, message.channel.send);
       message.channel.send(str);
     }).catch(function (err) {
       console.error(err);
@@ -133,20 +146,29 @@ function _addCommand(command, documentation, fn) {
 }
 
 function _formatAPI(apiOutput) {
-  return $(apiOutput.list).map(function (entry) {
-    const reading = entry.word == undefined
-      ? `**${entry.reading}**`
-      : `**${entry.word}** (${entry.reading})`;
+  return $(apiOutput.list).map(function (lexeme) {
+    const reading = lexeme.word == undefined
+      ? `**${lexeme.reading}**`
+      : `**${lexeme.word}** (${lexeme.reading})`;
     
-    const partsOfSpeech = $(entry.classes.list).map(function (group) {
-      const category = `**${group.category}**`;
-      const definitions = $.map(function (definition, index) {
-        return `${index + 1}. ${definition.sense}`;
-      }, group.definitions.list).join('\n');
+    const wordClassCluster = $(lexeme.classes.list).map(function (wordClass) {
+      const partOfSpeech = wordClass.category.trim() == ''
+        ? '***Unknown***'
+        : `***${wordClass.category.trim()}***`;
+      const senses = $.map(function (sense, i) {
+        const subsenseCluster = $.map(function (subsenseObj, j) {
+          return `\u3000\u3000${i + 1}.${j + 1}. ${subsenseObj.subsense}`;
+        }, sense.subsenses.list).join('\n');
+        const subsenseString = subsenseCluster.length > 0
+          ? `${subsenseCluster}\n`
+          : subsenseCluster;
 
-      return category + '\n' + definitions;
+        return `${i + 1}. ${sense.sense}\n${subsenseString}`;
+      }, wordClass.definitions.list).join('\n');
+
+      return partOfSpeech + '\n' + senses;
     }).value().join('\n');
-    return reading + '\n' + partsOfSpeech;
+    return reading + '\n' + wordClassCluster;
   }).value();
 }
 

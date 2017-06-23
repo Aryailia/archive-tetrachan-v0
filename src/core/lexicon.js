@@ -7,8 +7,9 @@ var settingsOver = require('./utils.js').settingsOver;
 var SUB_CATEGORY_1 = 'lexeme';
 var SUB_CATEGORY_2 = 'classes';
 var SUB_CATEGORY_3 = 'definitions';
+var SUB_CATEGORY_4 = 'subsenses';
 
-var _lexeme, _classes, _senses;
+var _lexeme, _classes, _senses, _subsenses;
 // Outline is all the possible entries for options at that level
 // Note: .addDefinition() accepts a string, not an object unlike the others
 // 
@@ -45,13 +46,26 @@ var lexicon = {
         sense: '',
         examples: [], }, // Last of options
 
-        //list: [], // This gets added by _factory()
-      },
+        //list: [], // This gets added _factory()
+        [SUB_CATEGORY_4]: { outline: {
+          // The following are the accessible properties for word classes
+          // And can be specified by options
+          subsense: '', }, // Last of option
+        },
 
+        mixin: { // For definitions
+          add: function (mainSenses, options) {
+            var obj = settingsOver(_subsenses.outline, options);
+            mainSenses.list.push(obj);
+          }
+        },
+      },
       mixin: { // For definitions
         addDefinition: function (definitions, options) {
           var obj = settingsOver(_senses.outline, options);
+          obj[SUB_CATEGORY_4] = _factory(_senses.mixin);
           definitions.list.push(obj);
+          return obj;
         }
       },
     },
@@ -81,12 +95,15 @@ function _lexiconFactory() {
 _lexeme = lexicon[SUB_CATEGORY_1];
 _classes = _lexeme[SUB_CATEGORY_2];
 _senses = _classes[SUB_CATEGORY_3];
+_subsenses = _senses[SUB_CATEGORY_4];
+
 
 var output = {
   factory: _lexiconFactory,
   lexiconMixin: lexicon.mixin,
   lexemeMixin: _lexeme.mixin,
   classMixin: _classes.mixin,
+  senseMixin: _senses.mixin,
 };
 
 // Helper functions
