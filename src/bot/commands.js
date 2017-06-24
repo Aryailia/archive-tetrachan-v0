@@ -3,7 +3,7 @@
 const IS_DEVELOPMENT = process.argv[2] &&
   process.argv[2].trim().toLowerCase() === 'development'; 
 
-const fs =require('fs');
+const fs = require('fs');
 const Url = require('url');
 //const Protocol = {
 //  'https:': require('follow-redirects/https'),
@@ -19,24 +19,29 @@ const Dictionaries = require('./dictwrapper.js');
 const $ = require('../../lib/Compose/compose.js');
 //const languages = require('./bot/languages.json');
 
-const commands = {
-  ping: function (parameter, message) {
-    message.channel.send('pong');
-  },
-  //en: commands.oed,
+const structure = botwrapper.setupCommand(function (commandStructure, name) {
+  return true;
+});
 
-  jp: function () {
-  },
-};
+const commands = structure.commands;
+structure.addCommand('help', ['ZMiscellaneous'], ' [<commandName>]',
+  'Lists all the commands. ',
+  'Something',
+  botwrapper.makeDefaultHelpCommand(structure, false, true)
+);
+
+structure.addCommand('ping', ['ZMiscellaneous', 'Respond'], '',
+  'ey',
+  'lmao',
+  function (text, message) {
+    message.channel.send('pong');
+  }
+);
 
 _addCommand('jisho', '', function (text, message) {
   Dictionaries.onlineLookup('jisho', text, '', _onlineRequest)
     .then(function (readingList) { // Process readingList structure
       return _formatAPI(readingList).join('\n\n');
-        //.filter(function (entry) {
-        //  entry.reading ===
-        //
-        //})
     }).then(function (str) { // Output
       //wrapper.massMessage(str, message.channel.send);
       message.channel.send(str);
