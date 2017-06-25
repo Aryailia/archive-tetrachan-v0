@@ -34,7 +34,6 @@ const Protocol = {
 // Dictionaries
 dicts.web.oxford = require('../dicts/bot/oxford.js');
 
-
 // Other commands
 dicts.onlineDictionaryCommand = function (name) {
   return function (text, message) {
@@ -89,9 +88,9 @@ dicts.formatAPI = function (apiOutput) {
   }).value();
 };
 
-dicts.offlineRequest = function (processBuffer) {
+dicts.offlineRequest = function (url, processBuffer) {
   return new Promise(function (resolve, reject) {
-    const stream = fs.createReadStream('./dicts/cedict_ts-2017-06-19.u8');
+    const stream = fs.createReadStream(url);
     let last = '';
     stream.setEncoding('utf8');
     stream.on('data', function (chunk) {

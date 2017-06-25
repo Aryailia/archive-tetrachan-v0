@@ -44,11 +44,10 @@ var output = {
   web: {},
 };
 
-var offline = output.local;
-var online = output.web;
+var web = output.web;
+var local = output.local;
 
-online.weblio = require('../dicts/weblio.js');
-
+web.weblio = require('../dicts/weblio.js');
 
 /**
  * @todo compare speed of multiline regex vs splitting across newlines/node\
@@ -57,7 +56,7 @@ online.weblio = require('../dicts/weblio.js');
  * and that we aren't missing out last entry in a buffer chunk
  * @todo of course add file failure code
  */
-offline.cedict = function (lexicon, text, loader) {
+local.cedict = function (lexicon, text, loader) {
   var wb = '[ \\n\\[\\]\\/]';
   var query;
   switch ('') { // Simplified, traditional, pinyin, and english
@@ -66,12 +65,12 @@ offline.cedict = function (lexicon, text, loader) {
     //case 'p': query = new RegExp('^.*(' + text + ').*$','igm'); break;
     //case 'e': query = new RegExp('^.*(' + text + ').*$','igm'); break;
     default: query = //new RegExp('^(.*' + text + wb +'.*)$', 'igm');
-    new RegExp('((?:\n|\n.*' + wb + ')' + text + wb +'.*)$', 'igm');
+      new RegExp('((?:\n|\n.*' + wb + ')' + text + wb +'.*)$', 'igm');
     //console.log(query);
   }
   var process = /^\n?([^#]\S*) (\S+) \[(.+)\] \/(.+)\/$/;
 
-  return loader(function (last, chunk) {
+  return loader('./lib/cedict_ts-2017-06-19.u8', function (last, chunk) {
     var toProcess = '\n' + last.substr(last.lastIndexOf('\n') + 1) + chunk;
     var searchResult, decompose;
     while ((searchResult = query.exec(toProcess)) != null  && lexicon.list.length < 10) {
@@ -91,103 +90,12 @@ offline.cedict = function (lexicon, text, loader) {
   });
 };
 
-
-function _selectTag(property, tag, node) {
-  return $.filter(function (child) {
-    return child[property] === tag;
-  }, node);
-}
-function _selectAttribs(property, tag, node) {
-  return $.filter(function (child) {
-    return child.hasOwnProperty('attribs') && child.attribs[property] === tag;
-  }, node);
-}
-function _gooParseEntryPage(wordPage) {
-  var html = selector.parse(wordPage.match(/<!-- Leaf -->[\S\s]+<!-- \/Leaf -->/));
-  var entry = _selectTag('name', 'div', html)[0];
-  var body = selector.stepQuery(['div', '.content-box visible'], html)[0].children;
-  var explanation = _selectAttribs('class', 'explanation',
-    _selectAttribs('class', 'kokugo', body)[0].children
-  )[0].children;
-
-  var title = $(_selectTag('name', 'h1', entry.children)[0].children)
-    .filter(function (child) { return child.hasOwnProperty('data'); })
-    .map(function (child) { return child.data; } )
-    .value().join('');
-  var definitions = _selectTag('name', 'ol', explanation).map(x => x.children);
-  var synonyms = _selectTag('name', 'div', explanation)[0];
-  var partOfSpeech =
-    //_selectTag('name', 'a',
-      //_selectTag('name', 'li',
-        _selectAttribs('class', 'list-tag-b', body)[0].children
-      //)[0].children
-    //)[0]//.children[0].data;
-    
-  //domutils.getText(partOfSpeech).trim();  
-  console.log('---');
-  console.log('title', title);
-  //console.log('body', definitions);
-  //console.log('class', partOfSpeech);
-  //console.log(domutils.find(function (a) {console.log(a);}, body));
-}
-
-online.goo = function (list, text, fetcher) {
-  text = 'きみ';
-  var url = 'https://dictionary.goo.ne.jp:443';
-  //https://dictionary.goo.ne.jp/freewordsearcher.html?MT=君&mode=1&kind=jn
-  //https://dictionary.goo.ne.jp/srch/jn/%E3%81%8D%E3%81%BF/m1u/
-  //<li data-value="0">で始まる</li>
-  //<li data-value="1" class="NR-now">で一致する</li>
-  //<li data-value="2">で終わる</li>
-  //<li data-value="3">を説明文に含む</li>
-  //<li data-value="6">を見出しに含む</li>
-  var test = url + '/srch/jn/' + encodeURIComponent(text) + '/m1u/';
-  console.log(test);
-  (fetcher(test)
-  //(fetcher(url + '/srch/jn/' + text + '/m1u/')
-    .then(function (search) {
-      //var resultSection = search.match(/<ul class="list-search-a">[\S\s]*?<\/ul>/);
-      //console.log(resultSection);
-      var results = /<ul class="list-search-a">([\S\s]*?)<\/ul>/.exec(search);
-      //var 
-      console.log(search);
-      if (results === null) {
-        throw new Error('Error: goo - Regex could not parse output.');
-      }
-      return($(_parseHtml(results[1]))
-        .filter(function (node) { return node.name === 'li'; })
-        //.foreach(function (x) { console.log(x); }) // For testing
-        .map(function (liNode) { return _selectTag('name', 'a', liNode.children)[0]; })
-        .map(function (linkNode) { // Process links
-          var entry = _selectTag('name', 'dl', linkNode.children)[0];
-          return {
-            link: linkNode.attribs.href,
-            word: _selectTag('name', 'dt', entry.children)[0].children[0].name,
-            preview:
-              _selectAttribs('class', 'mean text-b', _selectTag('name', 'dd',
-                entry.children))[0].children[0].raw,
-          };
-        }).map(function (parsedSearch) {
-          var path = parsedSearch.link.replace(/[^/]*\/$/, '');
-          return(fetcher(url + path)
-            .then(_gooParseEntryPage)
-            .catch(output.processError)
-          );
-        }).value()
-      );
-    }).then (function (results) {
-      //results.forEach(x => console.log(x));
-    }).catch(output.processError)
-  );
-  return Promise.resolve('50');
-};
-
-online['so-mdbg'] = function (lexicon, text, fetcher) {
+web['so-mdbg'] = function (lexicon, text, fetcher) {
   var url = 'https://www.mdbg.net/chinese/rsc/img/stroke_anim/';
   return fetcher(url + text.charCodeAt(0) + '.gif');
 };
 
-online.jisho = function (lexicon, text, fetcher) {
+web.jisho = function (lexicon, text, fetcher) {
   var url = 'http://jisho.org:80/api/v1/search/words?keyword=';
   ////var benchmark1 = new Date().getTime();
   return(fetcher(url + encodeURIComponent(text))
@@ -257,6 +165,97 @@ online.jisho = function (lexicon, text, fetcher) {
       }
     }).catch(output.processError)
   );
+};
+
+
+function _selectTag(property, tag, node) {
+  return $.filter(function (child) {
+    return child[property] === tag;
+  }, node);
+}
+function _selectAttribs(property, tag, node) {
+  return $.filter(function (child) {
+    return child.hasOwnProperty('attribs') && child.attribs[property] === tag;
+  }, node);
+}
+function _gooParseEntryPage(wordPage) {
+  var html = selector.parse(wordPage.match(/<!-- Leaf -->[\S\s]+<!-- \/Leaf -->/));
+  var entry = _selectTag('name', 'div', html)[0];
+  var body = selector.stepQuery(['div', '.content-box visible'], html)[0].children;
+  var explanation = _selectAttribs('class', 'explanation',
+    _selectAttribs('class', 'kokugo', body)[0].children
+  )[0].children;
+
+  var title = $(_selectTag('name', 'h1', entry.children)[0].children)
+    .filter(function (child) { return child.hasOwnProperty('data'); })
+    .map(function (child) { return child.data; } )
+    .value().join('');
+  var definitions = _selectTag('name', 'ol', explanation).map(x => x.children);
+  var synonyms = _selectTag('name', 'div', explanation)[0];
+  var partOfSpeech =
+    //_selectTag('name', 'a',
+      //_selectTag('name', 'li',
+        _selectAttribs('class', 'list-tag-b', body)[0].children
+      //)[0].children
+    //)[0]//.children[0].data;
+    
+  //domutils.getText(partOfSpeech).trim();  
+  console.log('---');
+  console.log('title', title);
+  //console.log('body', definitions);
+  //console.log('class', partOfSpeech);
+  //console.log(domutils.find(function (a) {console.log(a);}, body));
+}
+
+web.goo = function (list, text, fetcher) {
+  text = 'きみ';
+  var url = 'https://dictionary.goo.ne.jp:443';
+  //https://dictionary.goo.ne.jp/freewordsearcher.html?MT=君&mode=1&kind=jn
+  //https://dictionary.goo.ne.jp/srch/jn/%E3%81%8D%E3%81%BF/m1u/
+  //<li data-value="0">で始まる</li>
+  //<li data-value="1" class="NR-now">で一致する</li>
+  //<li data-value="2">で終わる</li>
+  //<li data-value="3">を説明文に含む</li>
+  //<li data-value="6">を見出しに含む</li>
+  var test = url + '/srch/jn/' + encodeURIComponent(text) + '/m1u/';
+  console.log(test);
+  (fetcher(test)
+  //(fetcher(url + '/srch/jn/' + text + '/m1u/')
+    .then(function (search) {
+      //var resultSection = search.match(/<ul class="list-search-a">[\S\s]*?<\/ul>/);
+      //console.log(resultSection);
+      var results = /<ul class="list-search-a">([\S\s]*?)<\/ul>/.exec(search);
+      //var 
+      console.log(search);
+      if (results === null) {
+        throw new Error('Error: goo - Regex could not parse output.');
+      }
+      return($(_parseHtml(results[1]))
+        .filter(function (node) { return node.name === 'li'; })
+        //.foreach(function (x) { console.log(x); }) // For testing
+        .map(function (liNode) { return _selectTag('name', 'a', liNode.children)[0]; })
+        .map(function (linkNode) { // Process links
+          var entry = _selectTag('name', 'dl', linkNode.children)[0];
+          return {
+            link: linkNode.attribs.href,
+            word: _selectTag('name', 'dt', entry.children)[0].children[0].name,
+            preview:
+              _selectAttribs('class', 'mean text-b', _selectTag('name', 'dd',
+                entry.children))[0].children[0].raw,
+          };
+        }).map(function (parsedSearch) {
+          var path = parsedSearch.link.replace(/[^/]*\/$/, '');
+          return(fetcher(url + path)
+            .then(_gooParseEntryPage)
+            .catch(output.processError)
+          );
+        }).value()
+      );
+    }).then (function (results) {
+      //results.forEach(x => console.log(x));
+    }).catch(output.processError)
+  );
+  return Promise.resolve('50');
 };
 
 //*/

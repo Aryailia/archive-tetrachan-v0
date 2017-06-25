@@ -3,25 +3,10 @@
 const IS_DEVELOPMENT = process.argv[2] &&
   process.argv[2].trim().toLowerCase() === 'development'; 
 
-const fs = require('fs');
-const Url = require('url');
-
 const botwrapper = require('../../lib/bothelpers/botwrapper.js');
 const config = require('../../personal/discordconfig.json');
-
-//const Protocol = {
-//  'https:': require('follow-redirects/https'),
-//  'http:': require('follow-redirects/http'),
-//};
-const Protocol = {
-  'https:': require('https'),
-  'http:': require('http'),
-};
-
 const Dictionaries = require('./dictwrapper.js');
-const $ = require('../../lib/Compose/compose.js');
-//const unicode = require(path.resolve('./src/core/unicode.js'));
-//const languages = require('./bot/languages.json');
+//const $ = require('../../lib/Compose/compose.js');
 
 const structure = botwrapper.setupCommand(function (commandStructure, name) {
   return true;
