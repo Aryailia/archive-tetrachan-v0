@@ -221,7 +221,8 @@ const requestDefaults = {
 function _onlineRequest(requestUrl, options) {
   const urlObj = Url.parse(requestUrl);
   return new Promise(function (resolve, reject) {
-    const headers = botwrapper.strictDefaults(requestDefaults, options);
+    //console.log();
+    const headers = $.defaults(requestDefaults, options == undefined ? {} : options, true);
     headers.port = urlObj.port; // Deferring port setting to the URL
     headers.hostname = urlObj.hostname;
     headers.path = urlObj.path;

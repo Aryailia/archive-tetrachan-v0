@@ -19,29 +19,6 @@ var selector = require('./selector.js');
 var lexicon = require('./lexicon.js');
 var $ = require('../../lib/Compose/compose.js');
 
-/*$.flow = function () {
-  var fn = arguments;
-  return function (input) {
-    Object.keys(fn).forEach(function (index) {
-      input = fn[index](input);
-    });
-    return input;
-  };
-};*/
-
-//htmlparser.
-
-function _selectTag(property, tag, node) {
-  return $.filter(function (child) {
-    return child[property] === tag;
-  }, node);
-}
-function _selectAttribs(property, tag, node) {
-  return $.filter(function (child) {
-    return child.hasOwnProperty('attribs') && child.attribs[property] === tag;
-  }, node);
-}
-
 var output = {
   processJson: function (response) {
     return JSON.parse(response);
@@ -114,6 +91,17 @@ offline.cedict = function (lexicon, text, loader) {
   });
 };
 
+
+function _selectTag(property, tag, node) {
+  return $.filter(function (child) {
+    return child[property] === tag;
+  }, node);
+}
+function _selectAttribs(property, tag, node) {
+  return $.filter(function (child) {
+    return child.hasOwnProperty('attribs') && child.attribs[property] === tag;
+  }, node);
+}
 function _gooParseEntryPage(wordPage) {
   var html = selector.parse(wordPage.match(/<!-- Leaf -->[\S\s]+<!-- \/Leaf -->/));
   var entry = _selectTag('name', 'div', html)[0];
@@ -273,39 +261,3 @@ online.jisho = function (lexicon, text, fetcher) {
 
 //*/
 module.exports = output;
-
-// Old implementation
-/*var TetraChanDictionaryInterface = Object.create(null);
-(function (dictionary, utils) {
-  function query(text, pusher, json) {
-    //console.log(JSON.stringify(json, null, 2));
-    var entries = json.data;
-    var i, j, x, matches, japanese;
-
-    for (i = 0; i < entries.length; ++i) {
-      matches = false;
-      japanese = entries[i].japanese;
-      for (j = 0; !matches && (j < japanese.length); ++j) {
-        x = japanese[j];
-        matches = matches || (text === x.word) || (text === x.reading);
-      }
-
-      // If 
-      if (matches) {
-        pusher(entries[i]);
-      }
-    }
-  }
-
-  dictionary.onlineSearch = function(text, pusher, url) {
-    var i;
-    for (i = 1; i <= text.length; ++i) {
-      //console.log(url + encodeURIComponent(quote));
-      var quote = text.substr(0, i);
-      var search = fetch(url + encodeURIComponent(text.substr(0, i)))
-        .then(utils.responseJSON)
-        //.then(query.bind(this, quote, pusher));//*/
-      
-//    }
-//  };
-//}(TetraChanDictionaryInterface, TetraChanUtils));
