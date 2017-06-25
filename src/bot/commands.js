@@ -45,7 +45,8 @@ structure.addCommand('ping', ['Miscellaneous'], '',
 structure.addCommand('jisho', ['Japanese', 'English'], ' <text>',
   'JP-EN dictionary. Searches Jisho.org for <text>',
   `Searches Japanese-English dictionary Jisho.jp for <text>
-  `,
+  - Quotes for exact match
+  - `,
   function (text, message) {
     (Dictionaries.onlineLookup('jisho', text, '', _onlineRequest)
       .then(function (readingList) { // Process readingList structure
@@ -193,8 +194,8 @@ function _formatAPI(apiOutput) {
     
     const wordClassCluster = $(lexeme.classes.list).map(function (wordClass) {
       const partOfSpeech = wordClass.category.trim() == ''
-        ? '***Unknown***'
-        : `***${wordClass.category.trim()}***`;
+        ? '__Unknown__'
+        : `__${wordClass.category.trim()}__`;
       const senses = $.map(function (sense, i) {
         const subsenseCluster = $.map(function (subsenseObj, j) {
           return `\u3000\u3000${i + 1}.${j + 1}. ${subsenseObj.submeaning}`;
