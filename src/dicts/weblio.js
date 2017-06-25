@@ -210,7 +210,6 @@ function processDictionary(data, dict) {
 }
 
 module.exports = function (list, text, fetcher) {
-  text = 'きみ';
   var url = 'http://www.weblio.jp/content/';
   return fetcher(url + encodeURIComponent(text)).then(function (data) {
     //var hokkaido = selector.parse(text.match(_weblioSection('北海道方言辞書')));

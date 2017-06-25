@@ -17,63 +17,127 @@
 
 'use strict';
 
-//var util = require('util');
 const dicts = require('../core/dictionaries.js');
-const config = require('../../personal/discordconfig.json');
-var $ = require('../../lib/Compose/compose.js');
 
-const _oxfordHeaders = {
-  headers: {
-    'Content-Type': 'application/x-www-form-urlencoded',
-    'Content-Length': 0,
-    Accept: 'application/json',
-    app_id: config.oed_application_id,
-    app_key: config.oed_application_key,
-  },
+const fs = require('fs');
+const Url = require('url');
+//const util = require('util');
+const $ = require('../../lib/Compose/compose.js');
+const botwrapper = require('../../lib/bothelpers/botwrapper.js');
+const Protocol = {
+  'http:': require('http'),
+  'https:': require('https'),
+//  'http:': require('follow-redirects/http'),
+//  'https:': require('follow-redirects/https'),
 };
 
-dicts.web.oxford = function (results, text, fetcher) {
-  const url = 'https://od-api.oxforddictionaries.com:443/api/v1/entries/en/';
-  return(fetcher(url + encodeURIComponent(text), _oxfordHeaders)
-    .then(dicts.processJson)
-    .then(function (data) {
-      data.results.forEach(function (result) {
-        const lexeme = results.add({
-          word: result.word,
-        });
-        result.lexicalEntries.forEach(function (lexicalEntry) {
-          const category = lexeme.classes.add({
-            category: lexicalEntry.lexicalCategory,
-          });
-          lexicalEntry.entries.forEach(function (entry) {
-            entry.senses.forEach(function (sense) { // Not sure when we get
-              if (sense.hasOwnProperty('definitions')) { // Normal Case
-                category.senses.add({
-                  meaning: sense.definitions.join('; '),
-                  examples: sense.examples,
-                });
-              } else if (sense.hasOwnProperty('crossReferenceMarkers')) { // Non-standard case
-                category.senses.add({
-                  meaning: sense.crossReferenceMarkers.join('; '),
-                  examples: sense.examples,
-                });
-              }
-              if (sense.hasOwnProperty('subsenses')) { // Not sure what subsenses are for
-                sense.subsenses.forEach(function (subsense) {
-                  category.senses.add({
-                    meaning: subsense.definitions.join('; '),
-                    examples: subsense.examples,
-                  });
-                });
-              }
-            });
-          });
-        });
-      });
-      //console.log(util.inspect(results, { showHidden: false, depth: null }));
-      return results;
-    })
-  );
+// Dictionaries
+dicts.web.oxford = require('../dicts/bot/oxford.js');
+
+
+// Other commands
+dicts.onlineDictionaryCommand = function (name) {
+  return function (text, message) {
+    (dicts.onlineLookup(name, text, '', dicts.onlineRequest)
+      .then(function (readingList) {
+        const str =  dicts.formatAPI(readingList).join('\n\n');
+        botwrapper.massMessage([str], message.channel);
+      }).catch(function (err) {
+        console.error(err);
+      })
+    );
+  };
 };
+
+dicts.offlineDictionaryCommand = function () {
+  return function (text, message) {
+    (dicts.offlineLookup('cedict', text, '', dicts.offlineRequest)
+      .then(function (readingList) {
+        const str = dicts.formatAPI(readingList).join('\n\n');
+        botwrapper.massMessage([str], message.channel);
+      }).catch(function (err) {
+        console.error(err);
+      })
+    );
+  };
+};
+
+dicts.formatAPI = function (apiOutput) {
+  return $(apiOutput.list).map(function (lexeme) {
+    const reading = lexeme.reading == undefined || lexeme.reading === ''
+      ? `**${lexeme.word}**`
+      : `**${lexeme.word}** (${lexeme.reading})`;
+    
+    const wordClassCluster = $(lexeme.classes.list).map(function (wordClass) {
+      const partOfSpeech = wordClass.category.trim() == ''
+        ? '__Unknown__'
+        : `__${wordClass.category.trim()}__`;
+      const senses = $.map(function (sense, i) {
+        const subsenseCluster = $.map(function (subsenseObj, j) {
+          return `\u3000\u3000${i + 1}.${j + 1}. ${subsenseObj.submeaning}`;
+        }, sense.subsenses.list).join('\n');
+        const subsenseString = subsenseCluster.length > 0
+          ? `${subsenseCluster}\n`
+          : subsenseCluster;
+
+        return `${i + 1}. ${sense.meaning}\n${subsenseString}`;
+      }, wordClass.senses.list).join('\n');
+
+      return partOfSpeech + '\n' + senses;
+    }).value().join('\n');
+    return reading + '\n' + wordClassCluster;
+  }).value();
+};
+
+dicts.offlineRequest = function (processBuffer) {
+  return new Promise(function (resolve, reject) {
+    const stream = fs.createReadStream('./dicts/cedict_ts-2017-06-19.u8');
+    let last = '';
+    stream.setEncoding('utf8');
+    stream.on('data', function (chunk) {
+      processBuffer(last, chunk);
+      last = chunk;
+    });
+    stream.on('end', function () {
+      resolve();
+    });
+  });
+};
+
+const requestDefaults = {
+  method: 'GET',
+  headers: {},
+};
+
+dicts.onlineRequest = function (requestUrl, options) {
+  const urlObj = Url.parse(requestUrl);
+  return new Promise(function (resolve, reject) {
+    //console.log();
+    const headers = $.defaults(requestDefaults, options == undefined ? {} : options, true);
+    headers.port = urlObj.port; // Deferring port setting to the URL
+    headers.hostname = urlObj.hostname;
+    headers.path = urlObj.path;
+    
+    Protocol[urlObj.protocol].get(headers, function(response) {
+      response.setEncoding('utf8');
+      if (response.statusCode === 200) {
+        var body = '';
+        response.on('data', function (data) {
+          body += data;
+        }).on('end',function () {
+          resolve(body);
+        }).on('error',function (error) { // receive error (not sure this is needed)
+          reject(error);
+        });
+      } else { // Bad error code
+        reject(`Error code ${response.statusCode}`);
+      }
+    }).on('error', function (error) { // send error
+      reject(error);
+    });
+  });
+};
+
+
 
 module.exports = dicts;
