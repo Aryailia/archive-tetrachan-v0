@@ -8,18 +8,23 @@ const config = require('../../personal/discordconfig.json');
 const Dictionaries = require('./dictwrapper.js');
 //const $ = require('../../lib/Compose/compose.js');
 
-const structure = botwrapper.setupCommand(function (commandStructure, name) {
-  return true;
-}, config.prefix);
-
-const commands = structure.commands;
-structure.addCommand('help', ['Miscellaneous'], ' [<commandName>]',
-  'Displays the help information. Can also use the -h tag on specific functions',
-  'Something',
-  botwrapper.makeDefaultHelpCommand(structure, true, true)
+const library = botwrapper.setupCommands(
+  function (lib, name, text, message) {
+    return true;
+  },
+  config.prefix
 );
 
-structure.addCommand('ping', ['Miscellaneous'], '',
+const commands = library.commands;
+library.addCommand('help', ['Miscellaneous'], ' [<commandName>]',
+  'Displays the help information. Can also use the -h tag on specific functions',
+  'Something',
+  function (text, message) {
+    botwrapper.defaultHelp(library, true, true, text, message.channel);
+  }
+);
+
+library.addCommand('ping', ['Miscellaneous'], '',
   'Just an innocent test function. Expected response is pong',
   'Just an innocent test function. Expected response is pong',
   function (text, message) {
@@ -27,14 +32,14 @@ structure.addCommand('ping', ['Miscellaneous'], '',
   }
 );
 
-structure.addCommand('jisho', ['Japanese', 'English'], ' <text>',
+library.addCommand('jisho', ['Japanese', 'English'], ' <text>',
   'JP-EN dictionary. Searches Jisho.org for <text>',
   `Searches Japanese-English dictionary Jisho.jp for <text>
   - Quotes for exact match
   - `,
   Dictionaries.onlineDictionaryCommand('jisho')
 );
-structure.addCommand('en]jp', ['Japanese'], ' <text>',
+library.addCommand('en]jp', ['Japanese'], ' <text>',
   `See ${config.prefix}jisho -h`,
   'Jisho alias. Adds quotation marks to search.',
   function (parameter, message) {
@@ -42,27 +47,27 @@ structure.addCommand('en]jp', ['Japanese'], ' <text>',
   }
 );
 
-structure.addCommand('jp]en', ['Japanese'], ' <text>',
+library.addCommand('jp]en', ['Japanese'], ' <text>',
   `See ${config.prefix}jisho -h`,
   'Jisho alias.',
-  structure.commands.jisho
+  library.commands.jisho
 );
 
-structure.addCommand('weblio', ['Japanese'], ' <text>',
+library.addCommand('weblio', ['Japanese'], ' <text>',
   'Online mono JP dictionary. Searches Weblio.jp for <text>',
   `Searches Japanese dictionary Weblio.jp for <text>
   `,
   Dictionaries.onlineDictionaryCommand('weblio')
 );
 
-structure.addCommand('oed', ['English'], ' <text>',
+library.addCommand('oed', ['English'], ' <text>',
   'Online mono EN dictionary. Searches Oxford for <text>',
   `Searches Japanese dictionary, Weblio.jp, for <text>
   Note: that this bot is on the free plan and has a limit of 3000 requests per month`,
   Dictionaries.onlineDictionaryCommand('oxford')
 );
 
-structure.addCommand('cedict', ['English', 'Mandarin'], ' <text>',
+library.addCommand('cedict', ['English', 'Mandarin'], ' <text>',
   'ZH-EN dictionary. Searches the CEDICT for <text>',
   `Searches Mandarin-English dictionary, Creative Common's Chinese-English Dictionary, for <text>
   `,
@@ -72,7 +77,7 @@ structure.addCommand('cedict', ['English', 'Mandarin'], ' <text>',
 /**
  * @todo Error checking for lack of permissions
  */
-structure.addCommand('so-mdbg', ['Stroke Order', 'PRC'], ' <text>',
+library.addCommand('so-mdbg', ['Stroke Order', 'PRC'], ' <text>',
   'PRC? stroke order. Searches the MDBG for <character>',
   `Searches MDBG dictionary for <character>
   `,
@@ -89,7 +94,7 @@ structure.addCommand('so-mdbg', ['Stroke Order', 'PRC'], ' <text>',
   }
 );
 
-structure.addCommand('goo', ['Japanese'], ' <text>',
+library.addCommand('goo', ['Japanese'], ' <text>',
   'PRC? stroke order. Searches the MDBG for <character>',
   `Searches MDBG dictionary for <character>
   `,
@@ -97,4 +102,4 @@ structure.addCommand('goo', ['Japanese'], ' <text>',
   Dictionaries.onlineDictionaryCommand('goo')
 );
 
-module.exports = structure.commands;
+module.exports = library.commands;
