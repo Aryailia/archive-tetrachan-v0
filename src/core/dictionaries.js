@@ -1,5 +1,7 @@
 //https://github.com/goldendict/goldendict
 
+// http://dict.revised.moe.edu.tw/cbdic/index.html
+
 // Web Extensions
 // https://developer.chrome.com/extensions/messaging#external
 // https://stackoverflow.com/questions/42108782/firefox-webextensions-get-local-files-content-by-path
